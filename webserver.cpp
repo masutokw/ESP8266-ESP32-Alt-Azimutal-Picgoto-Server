@@ -138,7 +138,7 @@ content+="AZ Counter:"+String(telescope->azmotor->counter)+"<br>";
 content+="Alt Counter:"+String(telescope->altmotor->counter)+"<br>";
 content+="Alt res:"+String(RAD_TO_ARCS*telescope->altmotor->resolution)+"<br>";
 content+="Az res:"+String(1.0/telescope->azmotor->resolution)+"<br>";
-content+="Sideral:"+String(sidereal_timeGMT (telescope->longitude,1))+"<br>";
+content+="Sideral:"+String(sidereal_timeGMT (telescope->longitude,telescope->time_zone))+"<br>";
 content+= "TIme :"+String(ctime(&now))+"<br>";
 content+="<button onclick=\"location.href='/'\"  type=\"button\">Back</button><br>";
 content+= "</body></html>";

@@ -11,11 +11,10 @@
 #include "mount.h"
 #include "webserver.h"
 #include "taki.h"
-#include <coredecls.h>                  // settimeofday_cb()
 //Comment out undesired Feature
 //---------------------------
-//#define NUNCHUCK_CONTROL
-//#define FIXED_IP
+#define NUNCHUCK_CONTROL
+#define FIXED_IP 14
 //#define OLED_DISPLAY
 //--------------------------------
 #ifdef  NUNCHUCK_CONTROL
@@ -29,13 +28,13 @@
 #include <FS.h>
 
 extern long sdt_millis;
-timeval cbtime;      // time set in callback
-bool cbtime_set = false;
+//timeval cbtime;      // time set in callback
+//bool cbtime_set = false;
 //comment wifipass.h and uncomment for your  wifi parameters
 //#include "wifipass.h"
 const char* ssid = "MyWIFI";
 const char* password = "Mypassword";
-extern picmsg  msg;
+//extern picmsg  msg;
 extern volatile int state;
 WiFiServer server(10001);
 WiFiClient serverClients[MAX_SRV_CLIENTS];
@@ -43,15 +42,15 @@ ESP8266WebServer serverweb(80);
 char buff[50] = "Waiting for connection..";
 extern char  response[200];
 mount_t *telescope;
-c_star st_now,st_target,st_current;
+c_star st_now, st_target, st_current;
 String ssi;
 String pwd;
 Ticker speed_control_tckr, counters_poll_tkr;
- extern c_star st_now,st_target;
+//extern c_star st_now, st_target;
 extern long command( char *str );
 time_t now;
 #ifdef OLED_DISPLAY
-#incl ude "SSD1306.h"
+#include "SSD1306.h"
 //#include "SH1106.h"
 
 #include "pad.h"
@@ -68,15 +67,15 @@ void oledDisplay()
   // display.drawString(0, 13, String(buff) + "  " + String(response));
   lxprintra(ra, sidereal_timeGMT_alt(telescope->longitude) * 15.0 * DEG_TO_RAD);
   display.drawString(0, 9, "LST " + String(ra));
- // lxprintra(ra, calc_Ra(telescope->azmotor->position, telescope->longitude));
- // lxprintde(de, telescope->altmotor->position);
+  // lxprintra(ra, calc_Ra(telescope->azmotor->position, telescope->longitude));
+  // lxprintde(de, telescope->altmotor->position);
 
   display.drawString(0, 50, "RA:" + String(ra) + " DE:" + String(de));
   lxprintde(de, telescope->azmotor->delta);
   display.drawString(0, 36, String(de)); // ctime(&now));
   display.drawString(0, 18, "MA:" + String(telescope->azmotor->counter) + " MD:" + String(telescope->altmotor->counter));
   //display.drawString(0, 27, "Dt:" + String(digitalRead(16)));//(telescope->azmotor->slewing));
-   display.drawString(0, 27, "Dt:" + String(digitalRead(16)))+" Rate:" +String(telescope->srate));
+  display.drawString(0, 27, "Dt:" + String(digitalRead(16))) + " Rate:" + String(telescope->srate));
   //unsigned int n= pwd.length();
   //display.drawString(0, 32,String(pw)+ " "+ String(n));
   display.drawString(0, 0, ctime(&now));
@@ -157,24 +156,18 @@ int net_task(void)
   }
   return millis() - lag;
 }
-void time_is_set (void)
-{
-  gettimeofday(&cbtime, NULL);
-  cbtime_set = true;
-}
+
+
 void setup()
 {
 
 #ifdef OLED_DISPLAY
   oled_initscr();
-
-
-
 #endif
 
 #ifdef NUNCHUCK_CONTROL
   // nunchuck_init(D6, D5);
-     nunchuck_init(2, 0);
+  nunchuck_init(2, 0);
 
 #endif
 
@@ -198,11 +191,11 @@ void setup()
   }
   else  WiFi.begin(ssid, password);
 #ifdef FIXED_IP
-  IPAddress ip(192, 168, 1, 15);
+  IPAddress ip(192, 168, 1, FIXED_IP);
   IPAddress gateway(192, 168, 1, 1);
   IPAddress subnet(255, 255, 0, 0);
-//  IPAddress DNS(192, 168, 1, 1);
-  WiFi.config(ip, gateway, subnet,gateway);
+  //  IPAddress DNS(192, 168, 1, 1);
+  WiFi.config(ip, gateway, subnet, gateway);
 #endif
 
   delay(500);
@@ -226,19 +219,11 @@ void setup()
   server.setNoDelay(true);
   telescope = create_mount();
   readconfig(telescope);
-
- // settimeofday_cb(time_is_set);
   config_NTP(telescope->time_zone, 0);
-   // configTime(3600, 3600, "0.es.pool.ntp.org");
-
   initwebserver();
   delay (2000) ;
- now = time(nullptr);
-   tak_init(telescope);
- /*  Serial.println(ctime(&now));
-    Serial.println(sidereal_timeGMT (telescope->longitude,telescope->time_zone));
-     Serial.println(millis()-sdt_millis);*/
-//  sdt_init(telescope->longitude, telescope->time_zone);
+  now = time(nullptr);
+  tak_init(telescope);
   speed_control_tckr.attach_ms(SPEED_CONTROL_TICKER, thread_motor2, telescope);
   counters_poll_tkr.attach_ms(COUNTERS_POLL_TICKER, track, telescope);
 
@@ -254,13 +239,7 @@ void loop()
   net_task();
   now = time(nullptr);
   serverweb.handleClient();
-  /* st_target.timer_count =((millis()-sdt_millis)/ 1000.0);
-   to_equatorial(&st_target);
-   Serial.println(st_target.ra*RAD_TO_DEG/15.0);
-   Serial.println(st_target.dec*RAD_TO_DEG);
-   Serial.println(st_target.az*RAD_TO_DEG);
-   Serial.println(st_target.alt*RAD_TO_DEG);
-    Serial.println(millis()-sdt_millis);*/
+
  #ifdef  NUNCHUCK_CONTROL
   nunchuck_read() ;
 #endif
