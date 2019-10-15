@@ -26,14 +26,11 @@
 #define SPEED_CONTROL_TICKER 10
 #define COUNTERS_POLL_TICKER 100
 #include <FS.h>
-
 extern long sdt_millis;
-//timeval cbtime;      // time set in callback
-//bool cbtime_set = false;
 //comment wifipass.h and uncomment for your  wifi parameters
-//#include "wifipass.h"
-const char* ssid = "MyWIFI";
-const char* password = "Mypassword";
+#include "wifipass.h"
+//const char* ssid = "MyWIFI";
+//const char* password = "Mypassword";
 //extern picmsg  msg;
 extern volatile int state;
 WiFiServer server(10001);
@@ -46,7 +43,6 @@ c_star st_now, st_target, st_current;
 String ssi;
 String pwd;
 Ticker speed_control_tckr, counters_poll_tkr;
-//extern c_star st_now, st_target;
 extern long command( char *str );
 time_t now;
 #ifdef OLED_DISPLAY
@@ -203,8 +199,9 @@ void setup()
   while (WiFi.status() != WL_CONNECTED && i++ < 20) delay(500);
   if (i == 21)
   {
-    //     while (1) delay(500);
+        //hile (1) delay(500);
   }
+if  (WiFi.status() != WL_CONNECTED) WiFi.disconnect(true);
 #ifdef OLED_DISPLAY
   oled_waitscr();
 #endif
@@ -250,7 +247,6 @@ void loop()
 #endif
 
 }
-
 
 
 
