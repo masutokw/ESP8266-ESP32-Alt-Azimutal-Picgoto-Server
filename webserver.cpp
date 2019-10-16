@@ -1,35 +1,35 @@
 #include <ESP8266WebServer.h>
 #include "time.h"
 #include "webserver.h"
-
+extern char one;
 long getDecimal(float val)
 {
- int intPart = int(val);
- long decPart = 10000 *(val-intPart); //I am multiplying by 1000 assuming that the foat values will have a maximum of 3 decimal places
-                                   //Change to match the number of decimal places you need
- if(decPart>0)return(decPart);           //return the decimal part of float number if it is available
- else if(decPart<0)return((-1)*decPart); //if negative, multiply by -1
- else if(decPart=0)return(00);           //return 0 if decimal part of float number is not available
+  int intPart = int(val);
+  long decPart = 10000 * (val - intPart); //I am multiplying by 1000 assuming that the foat values will have a maximum of 3 decimal places
+  //Change to match the number of decimal places you need
+  if (decPart > 0)return (decPart);       //return the decimal part of float number if it is available
+  else if (decPart < 0)return ((-1) * decPart); //if negative, multiply by -1
+  else if (decPart = 0)return (00);       //return 0 if decimal part of float number is not available
 }
 
 
 
 String getContentType(String filename)
 {
-    if (serverweb.hasArg("download")) return "application/octet-stream";
-    else if (filename.endsWith(".htm")) return "text/html";
-    else if (filename.endsWith(".html")) return "text/html";
-    else if (filename.endsWith(".css")) return "text/css";
-    else if (filename.endsWith(".js")) return "application/javascript";
-    else if (filename.endsWith(".png")) return "image/png";
-    else if (filename.endsWith(".gif")) return "image/gif";
-    else if (filename.endsWith(".jpg")) return "image/jpeg";
-    else if (filename.endsWith(".ico")) return "image/x-icon";
-    else if (filename.endsWith(".xml")) return "text/xml";
-    else if (filename.endsWith(".pdf")) return "application/x-pdf";
-    else if (filename.endsWith(".zip")) return "application/x-zip";
-    else if (filename.endsWith(".gz")) return "application/x-gzip";
-    return "text/plain";
+  if (serverweb.hasArg("download")) return "application/octet-stream";
+  else if (filename.endsWith(".htm")) return "text/html";
+  else if (filename.endsWith(".html")) return "text/html";
+  else if (filename.endsWith(".css")) return "text/css";
+  else if (filename.endsWith(".js")) return "application/javascript";
+  else if (filename.endsWith(".png")) return "image/png";
+  else if (filename.endsWith(".gif")) return "image/gif";
+  else if (filename.endsWith(".jpg")) return "image/jpeg";
+  else if (filename.endsWith(".ico")) return "image/x-icon";
+  else if (filename.endsWith(".xml")) return "text/xml";
+  else if (filename.endsWith(".pdf")) return "application/x-pdf";
+  else if (filename.endsWith(".zip")) return "application/x-zip";
+  else if (filename.endsWith(".gz")) return "application/x-gzip";
+  return "text/plain";
 }
 void handleConfig()
 {
@@ -93,25 +93,25 @@ void handleConfig()
   content += "<tr><td>SSID</td><td><input type='text' name='SSID' style='height:20px; width:100px' value='" + ssi + "'></td></tr> ";
   content += "<tr><td>Password:</td><td><input type='password' name='PASSWORD' style='height:20px; width:100px'  value='" + pwd + "'></td></tr></table></fieldset>";
   content += "<fieldset style=\"width:15%\"> <legend>Mount parameters:</legend>";
-   content += "<table style='width:200px'><tr><th></th><th>RA</th><th>Dec</th></tr>";
+  content += "<table style='width:200px'><tr><th></th><th>RA</th><th>Dec</th></tr>";
   content += "<tr><td>Counter</td><td> <input type='number' name='MAXCOUNTER' style='text-align: right;height:20px; width:80px' value ='" + String(telescope->azmotor->maxcounter) + "'></td>";
   content += "<td> <input type='number' name='MAXCOUNTER_ALT' style='text-align: right;height:20px; width:80px' value ='" + String(telescope->altmotor->maxcounter) + "'></td></tr></table><br>";
   content += "<table style='width:200px'><tr><th>Rate X</th><th>RA/AZ</th><th>Dec/Alt</th></tr>";
-  content += "<tr><td>Guide</td><td><input type='number' step='0.1' name='GUIDE'"+String(N_STYLE) + String(telescope->rate[0][0]) + "'></td>";
-  content += "<td><input type='number' step='0.1' name='GUIDEA'"+String(N_STYLE) + String(telescope->rate[0][1]) + "'></td></tr>";
+  content += "<tr><td>Guide</td><td><input type='number' step='0.1' name='GUIDE'" + String(N_STYLE) + String(telescope->rate[0][0]) + "'></td>";
+  content += "<td><input type='number' step='0.1' name='GUIDEA'" + String(N_STYLE) + String(telescope->rate[0][1]) + "'></td></tr>";
 
-  content += "<tr><td>Center</td><td><input type='number' step='1' name='CENTER'"+String(N_STYLE) + String(telescope->rate[1][0]) + "'></td>";
-  content += "<td><input type='number' step='1' name='CENTERA'"+String(N_STYLE) + String(telescope->rate[1][1]) + "'></td></tr>";
+  content += "<tr><td>Center</td><td><input type='number' step='1' name='CENTER'" + String(N_STYLE) + String(telescope->rate[1][0]) + "'></td>";
+  content += "<td><input type='number' step='1' name='CENTERA'" + String(N_STYLE) + String(telescope->rate[1][1]) + "'></td></tr>";
 
-  content += "<tr><td>Find</td><td><input type='number' step='1' name='FIND'"+ String(N_STYLE) + String(telescope->rate[2][0]) + "'></td>";
+  content += "<tr><td>Find</td><td><input type='number' step='1' name='FIND'" + String(N_STYLE) + String(telescope->rate[2][0]) + "'></td>";
   content += "<td><input type='number' step='1' name='FINDA' style='text-align: right;height:20px; width:60px' value ='" + String(telescope->rate[2][1]) + "'></td></tr>";
 
-  content += "<tr><td>Slew</td><td><input type='number' step='1' name='SLEW'"+ String(N_STYLE)+ String(telescope->rate[3][0]) + "'></td>";
-  content += "<td><input type='number' step='1' name='SLEWA'"+ String(N_STYLE) + String(telescope->rate[3][1]) + "'></td></tr>";
+  content += "<tr><td>Slew</td><td><input type='number' step='1' name='SLEW'" + String(N_STYLE) + String(telescope->rate[3][0]) + "'></td>";
+  content += "<td><input type='number' step='1' name='SLEWA'" + String(N_STYLE) + String(telescope->rate[3][1]) + "'></td></tr>";
 
   content += "<tr><td>Prescaler</td><td><input type='number' name='PRESCALER' style='text-align: right;height:20px; width:50px' value ='" + String(telescope->prescaler) + "' uSec</td></tr></table></fieldset>";
   content += "<fieldset style=\"width:15%\"> <legend>Geodata</legend>";
-    content += "<table style='width:200px'>";
+  content += "<table style='width:200px'>";
   content += "<tr><td>Longitude:</td><td><input type='number' step='any' id=\"lon\" name='LONGITUDE' style='text-align: right;height:20px; width:80px' value ='" +
              String(int(telescope->longitude)) + "." + String(getDecimal(telescope->longitude)) + "'></td></tr>";
   content += "<tr><td>Latitude:</td><td><input type='number'step='any' id=\"lat\" name='LATITUDE' style='text-align: right;height:20px; width:80px' value ='" + // String(telescope->lat) +"'><br>";
@@ -133,56 +133,98 @@ void handlePark(void)
   now = time(nullptr);
   mount_park(telescope);
   String content =  "<html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
-content+="Mount parked  ,position saved on EEPROM.<br>";
-content+="AZ Counter:"+String(telescope->azmotor->counter)+"<br>";
-content+="Alt Counter:"+String(telescope->altmotor->counter)+"<br>";
-content+="Alt res:"+String(RAD_TO_ARCS*telescope->altmotor->resolution)+"<br>";
-content+="Az res:"+String(1.0/telescope->azmotor->resolution)+"<br>";
-content+="Sideral:"+String(sidereal_timeGMT (telescope->longitude,telescope->time_zone))+"<br>";
-content+= "TIme :"+String(ctime(&now))+"<br>";
-content+="<button onclick=\"location.href='/'\"  type=\"button\">Back</button><br>";
-content+= "</body></html>";
-
+  content += "Mount parked  ,position saved on EEPROM.<br>";
+  content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
+  content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
+  content += "Alt res:" + String(RAD_TO_ARCS * telescope->altmotor->resolution) + "<br>";
+  content += "Az res:" + String(1.0 / telescope->azmotor->resolution) + "<br>";
+  content += "Sideral:" + String(sidereal_timeGMT (telescope->longitude, telescope->time_zone)) + "<br>";
+  content += "TIme :" + String(ctime(&now)) + "<br>";
+  content += "<button onclick=\"location.href='/'\"  type=\"button\">Back</button><br>";
+  content += "</body></html>";
   serverweb.send(200, "text/html", content);
+}
+void handleSync(void)
+{ String msg;
+  time_t rtc;
+  if (serverweb.hasArg("GMT")) {
+    msg = serverweb.arg("GMT");
+    rtc = (msg.toInt());
+    msg = serverweb.arg("OFFSET");
+    timeval tv = { rtc, 0 };
+    timezone tz = {msg.toInt()  , 0 };
+    settimeofday(&tv, &tz);
+    rtc = time(nullptr);
+    telescope->is_tracking = one = FALSE;
+    tak_init(telescope);
+    telescope->is_tracking = TRUE;
+  }
+  String content =  "<!DOCTYPE html><html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Sync </h2><br>";
+  content += "<p id=\"fecha\">" + msg + " " + String(ctime(&rtc)) + "</p>";
+  content += "<p id=\"fecha\">" + String(rtc) + "</p>";
+  content += "</body></html>";
+  serverweb.send(200, "text/html", content);
+
+}
+void handleTime(void)
+{ time_t now;
+  now = time(nullptr);
+  String content =  "<!DOCTYPE html><html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Time </h2><br>";
+  content += "<form id=\"frm1\" action=\"/sync\">";
+  content += "<button onclick=\"myFunction()\">Synchronize now!</button>";
+  content += "<input type=\"number\" name=\"GMT\" id=\"gmt\"><br><br>";
+  content += "<input type=\"number\" name=\"OFFSET\" id=\"offset\"><br><br>";
+  content += "</form><p id=\"fecha\"></p>";
+  content += "</form><p id=\"now\">" + String(now) + "</p>";
+  content += "<script> var d = new Date();var n = ~~(Date.now()/1000);document.getElementById(\"gmt\").value = n; var n = d.toTimeString()+\" \"+d.toDateString();";
+  content += "document.getElementById(\"fecha\").innerHTML = n; var o = d.getTimezoneOffset();";
+  content += "document.getElementById(\"offset\").value =-o;";
+  content += "function myFunction() {var d = new Date();var n = ~~(Date.now()/1000);document.getElementById(\"gmt\").value =n;";
+  content += " document.getElementById(\"frm1\").submit();}</script>";
+  content += "</body></html>";
+  serverweb.send(200, "text/html", content);
+
 }
 void handleRestart(void)
 { mount_park(telescope);
   String content =   "<html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ restarted</h2><br>";
-content+="Mount parked  ,position saved on EEPROM.<br>";
-content+="AZ Counter:"+String(telescope->azmotor->counter)+"<br>";
-content+="Alt Counter:"+String(telescope->altmotor->counter)+"<br>";
-content+= "</body></html>";
-serverweb.send(200, "text/html", content);
- ESP.restart();
+  content += "Mount parked  ,position saved on EEPROM.<br>";
+  content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
+  content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
+  content += "</body></html>";
+  serverweb.send(200, "text/html", content);
+  ESP.restart();
 }
 bool handleFileRead(String path)
 {
 
-    if (path.endsWith("/")) path += "index.htm";
-    String contentType = getContentType(path);
-    String pathWithGz = path + ".gz";
-    if (SPIFFS.exists(pathWithGz) || SPIFFS.exists(path))
-    {
-        if (SPIFFS.exists(pathWithGz))
-            path += ".gz";
-        File file = SPIFFS.open(path, "r");
-        size_t sent = serverweb.streamFile(file, contentType);
-        file.close();
-        return true;
-    }
-    return false;
+  if (path.endsWith("/")) path += "index.htm";
+  String contentType = getContentType(path);
+  String pathWithGz = path + ".gz";
+  if (SPIFFS.exists(pathWithGz) || SPIFFS.exists(path))
+  {
+    if (SPIFFS.exists(pathWithGz))
+      path += ".gz";
+    File file = SPIFFS.open(path, "r");
+    size_t sent = serverweb.streamFile(file, contentType);
+    file.close();
+    return true;
+  }
+  return false;
 }
 void initwebserver(void)
 {
-    serverweb.on("/config", handleConfig);
-    serverweb.on("/", handleConfig);
-     serverweb.on("/park", handlePark);
-     serverweb.on("/restart", handleRestart);
-   // serverweb.on("/formatfilesystem",handleFormat)
-    serverweb.onNotFound([]()
-    {
-        if (!handleFileRead(serverweb.uri()))
-            serverweb.send(404, "text/plain", "FileNotFound");
-    });
-    serverweb.begin();
+  serverweb.on("/config", handleConfig);
+  serverweb.on("/", handleConfig);
+  serverweb.on("/park", handlePark);
+  serverweb.on("/time", handleTime);
+  serverweb.on("/sync", handleSync);
+  serverweb.on("/restart", handleRestart);
+  // serverweb.on("/formatfilesystem",handleFormat)
+  serverweb.onNotFound([]()
+  {
+    if (!handleFileRead(serverweb.uri()))
+      serverweb.send(404, "text/plain", "FileNotFound");
+  });
+  serverweb.begin();
 }

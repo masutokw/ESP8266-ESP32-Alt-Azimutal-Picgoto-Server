@@ -70,7 +70,7 @@ int goto_ra_dec(mount_t *mt,double ra,double dec)
 int sync_ra_dec(mount_t *mt,double ra,double dec)
 {
     // st_current.timer_count = ( sidereal_timeGMT (mt->longitude, mt->time_zone)*3600.0 );
-    st_current.timer_count =millis()/1000.0;//chrono_read(&ti);
+    st_current.timer_count =((millis()-sdt_millis)/ 1000.0);//chrono_read(&ti);
     st_current.dec= st_target.dec=dec;
     st_current.ra=st_target.ra=ra;
     to_alt_az(&st_current);
@@ -222,45 +222,46 @@ void mount_park(mount_t *mt)
   mt->altmotor->targetspeed = 0.0;
   mt->azmotor->targetspeed = 0.0;
   delay(100);
-//  save_counters(ALT_ID);
+  save_counters(ALT_ID);
   delay(10);
-//  save_counters(AZ_ID);
+  save_counters(AZ_ID);
   delay(10);
 }
 
 
 void  tak_init(mount_t *mt)
-{
-     double temp=sidereal_timeGMT (mt->longitude, mt->time_zone);
+{ 
+  
   reset_transforms(0.0, 0.0, 0.0);
-       sdt_millis=millis();
+   double temp=sidereal_timeGMT (mt->longitude, mt->time_zone)*15.0;
+  sdt_millis=millis();
   if (1) //(mt->mount_mode == ALTAZ)
   {
 
-    set_star(&st_target, sidereal_timeGMT (mt->longitude, mt->time_zone)*15.0 + 90.0, 0.0, 90.0, 0.0, sdt_millis/1000.0);
-    init_star(1, &st_target);
-    set_star(&st_target,  sidereal_timeGMT (mt->longitude, mt->time_zone)*15.0, mt->lat, 180.00, 89.99, sdt_millis/1000.0);
-    init_star(2, &st_target);
+    set_star(&st_now, temp + 90.0, 0.0, 90.0, 0.0, 0);
+    init_star(1, &st_now);
+    set_star(&st_now,temp, mt->lat, 180.00, 89.99, 0);
+    init_star(2, &st_now);
 
   }
   else if (mt->mount_mode == EQ)
   {
     double ra    ;
-    set_star(&st_target,  sidereal_timeGMT (mt->longitude, mt->time_zone)*15, 0.0, 180.0, 0.0, 0);
-    init_star(1, &st_target);
-    ra = st_target.ra + M_PI / 2.0;
+    set_star(&st_now,  sidereal_timeGMT (mt->longitude, mt->time_zone)*15, 0.0, 180.0, 0.0, 0);
+    init_star(1, &st_now);
+    ra = st_now.ra + M_PI / 2.0;
     if (ra < 0) ra += M_2PI;
     if (mt->lat >= 0.0)
-      set_star(&st_target, ra * RAD_TO_DEG, 45, 90, 45, 0);
+      set_star(&st_now, ra * RAD_TO_DEG, 45, 90, 45, 0);
     else
-      set_star(&st_target, ra * RAD_TO_DEG, -45, 270, 45, 0);
-    init_star(2, &st_target);
+      set_star(&st_now, ra * RAD_TO_DEG, -45, 270, 45, 0);
+    init_star(2, &st_now);
 
 
   }
   compute_trasform();
-  set_star(&st_target,  sidereal_timeGMT (mt->longitude, mt->time_zone)*15, -52, 0.0, 0.0,sdt_millis/1000.0);
-  to_alt_az(&st_target);
+  set_star(&st_now,  sidereal_timeGMT (mt->longitude, mt->time_zone)*15, -52, 0.0, 0.0,sdt_millis/1000.0);
+  to_alt_az(&st_now);
   //  is_aligned=0;
   //  is_slewing='0';
   //  counter_x=counter_y=0;
@@ -282,7 +283,7 @@ void track(mount_t *mt)
         st_current.alt = mt->altmotor->position;
     //compute ecuatorial current equatorial values to be send out from LX200 protocol interface
     to_equatorial(&st_current);
-
+ 
     if (mt->is_tracking && one)
     {
       //compute next alt/az mount values  for target next lap second
@@ -314,5 +315,3 @@ void track(mount_t *mt)
   pollcounters( ALT_ID); sel_flag = true;
 
 }
-
-
