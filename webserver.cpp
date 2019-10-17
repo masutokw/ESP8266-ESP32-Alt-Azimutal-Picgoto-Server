@@ -172,10 +172,11 @@ void handleTime(void)
   String content =  "<!DOCTYPE html><html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Time </h2><br>";
   content += "<form id=\"frm1\" action=\"/sync\">";
   content += "<button onclick=\"myFunction()\">Synchronize now!</button>";
-  content += "<input type=\"number\" name=\"GMT\" id=\"gmt\"><br><br>";
-  content += "<input type=\"number\" name=\"OFFSET\" id=\"offset\"><br><br>";
+  content += "<input type=\"number\" name=\"GMT\" id=\"gmt\"  type=\"hidden\"><br><br>";
+  content += "<input type=\"number\" name=\"OFFSET\" type=\"hidden\" id=\"offset\"><br><br>";
   content += "</form><p id=\"fecha\"></p>";
   content += "</form><p id=\"now\">" + String(now) + "</p>";
+  content += "<button onclick=\"location.href='/'\"  type=\"button\">Back</button><br>";
   content += "<script> var d = new Date();var n = ~~(Date.now()/1000);document.getElementById(\"gmt\").value = n; var n = d.toTimeString()+\" \"+d.toDateString();";
   content += "document.getElementById(\"fecha\").innerHTML = n; var o = d.getTimezoneOffset();";
   content += "document.getElementById(\"offset\").value =-o;";

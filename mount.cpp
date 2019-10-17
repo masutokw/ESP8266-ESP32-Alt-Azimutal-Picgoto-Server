@@ -87,6 +87,32 @@ int sync_ra_dec(mount_t *mt,double ra,double dec)
 
 int mount_stop(mount_t *mt, char direction)
 {
+  mt->altmotor->slewing= mt->azmotor->slewing=FALSE;
+    switch (direction)
+    {
+    case 'n': case 's':
+        mt->altmotor->targetspeed=0.0;
+       do {delay( 10);} while (fabs(mt->altmotor->current_speed)>0.0);
+        break;
+
+
+    case 'w':   case 'e':
+        mt->azmotor->targetspeed=0.0;
+            do {delay( 10);} while (fabs(mt->azmotor->current_speed)>0.0);
+
+        break;
+
+    default:
+        mt->altmotor->targetspeed=0.0;
+
+        break;
+    };
+one=FALSE;mt->is_tracking=TRUE;
+
+}
+/*
+int mount_stop(mount_t *mt, char direction)
+{
   mt->altmotor->slewing = mt->azmotor->slewing = FALSE;
   switch (direction)
   {
@@ -104,7 +130,7 @@ int mount_stop(mount_t *mt, char direction)
       break;
   };
   one=FALSE;mt->is_tracking=TRUE;
-}
+}*/
 void mount_move(mount_t *mt, char dir)
 {
   mt->altmotor->slewing = mt->azmotor->slewing = FALSE;
