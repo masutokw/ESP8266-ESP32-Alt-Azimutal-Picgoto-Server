@@ -14,7 +14,7 @@
 //Comment out undesired Feature
 //---------------------------
 #define NUNCHUCK_CONTROL
-#define FIXED_IP 14
+//#define FIXED_IP 15
 //#define OLED_DISPLAY
 //--------------------------------
 #ifdef  NUNCHUCK_CONTROL
@@ -28,9 +28,9 @@
 #include <FS.h>
 extern long sdt_millis;
 //comment wifipass.h and uncomment for your  wifi parameters
-#include "wifipass.h"
-//const char* ssid = "MyWIFI";
-//const char* password = "Mypassword";
+//#include "wifipass.h"
+const char* ssid = "MyWIFI";
+const char* password = "Mypassword";
 //extern picmsg  msg;
 extern volatile int state;
 WiFiServer server(10001);
@@ -161,12 +161,6 @@ void setup()
   oled_initscr();
 #endif
 
-#ifdef NUNCHUCK_CONTROL
-  // nunchuck_init(D6, D5);
-  nunchuck_init(2, 0);
-
-#endif
-
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAP("PGT_ESP", "boquerones");
   SPIFFS.begin();
@@ -227,7 +221,10 @@ if  (WiFi.status() != WL_CONNECTED) WiFi.disconnect(true);
 #ifdef OLED_DISPLAY
   pad_Init();
 #endif // OLED_DISPLAY
-
+#ifdef NUNCHUCK_CONTROL
+  // nunchuck_init(D6, D5);
+  nunchuck_init(2, 0);
+#endif
 }
 
 void loop()

@@ -86,19 +86,20 @@ int sync_ra_dec(mount_t *mt,double ra,double dec)
 }
 
 int mount_stop(mount_t *mt, char direction)
-{
+{char n=0;
+ char top=100; 
   mt->altmotor->slewing= mt->azmotor->slewing=FALSE;
     switch (direction)
     {
     case 'n': case 's':
         mt->altmotor->targetspeed=0.0;
-       do {delay( 10);} while (fabs(mt->altmotor->current_speed)>0.0);
+      do {yield();delay(5);n++;} while ((n<top) && (fabs(mt->altmotor->current_speed)>0.0));
         break;
 
 
     case 'w':   case 'e':
         mt->azmotor->targetspeed=0.0;
-            do {delay( 10);} while (fabs(mt->azmotor->current_speed)>0.0);
+          do {yield();delay(5);n++;} while ((n<top) && (fabs(mt->azmotor->current_speed)>0.0));
 
         break;
 
@@ -261,7 +262,7 @@ void  tak_init(mount_t *mt)
   reset_transforms(0.0, 0.0, 0.0);
    double temp=sidereal_timeGMT (mt->longitude, mt->time_zone)*15.0;
   sdt_millis=millis();
-  if (1) //(mt->mount_mode == ALTAZ)
+  if  (mt->mount_mode == ALTAZ)
   {
 
     set_star(&st_now, temp + 90.0, 0.0, 90.0, 0.0, 0);
@@ -273,7 +274,7 @@ void  tak_init(mount_t *mt)
   else if (mt->mount_mode == EQ)
   {
     double ra    ;
-    set_star(&st_now,  sidereal_timeGMT (mt->longitude, mt->time_zone)*15, 0.0, 180.0, 0.0, 0);
+    set_star(&st_now,  temp, 0.0, 180.0, 0.0, 0);
     init_star(1, &st_now);
     ra = st_now.ra + M_PI / 2.0;
     if (ra < 0) ra += M_2PI;
@@ -286,7 +287,7 @@ void  tak_init(mount_t *mt)
 
   }
   compute_trasform();
-  set_star(&st_now,  sidereal_timeGMT (mt->longitude, mt->time_zone)*15, -52, 0.0, 0.0,sdt_millis/1000.0);
+  set_star(&st_now,temp,mt->lat, 0.0, 0.0,0);
   to_alt_az(&st_now);
   //  is_aligned=0;
   //  is_slewing='0';
