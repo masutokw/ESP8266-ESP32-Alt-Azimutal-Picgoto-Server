@@ -37,6 +37,7 @@ typedef struct
     int track;
     int time_zone;
     char is_tracking;
+    char sync;
 } mount_t;
 
 mount_t* create_mount(void);
@@ -45,7 +46,7 @@ int destroy_mount(mount_t* m);
 void mount_move(mount_t *mt,char direction);
 int mount_stop(mount_t *mt,char direction);
 void select_rate(mount_t *mt,char rate);
-int sync_ra_dec(mount_t *mt,double ra,double dec);
+int sync_ra_dec(mount_t *mt);
 void thread_motor(mount_t* m);
 void thread_motor2(mount_t* m);
 int get_pierside(mount_t *mt);

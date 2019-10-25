@@ -27,5 +27,8 @@ void lxprintde1(char* message,double ang);
 void lxprintde(char* message,double ang);
 void lxprintra1(char *message,double ang);
 void lxprintra(char *message,double ang);
+void lxprintaz1(char *message,double ang);
+void lxprintlong1(char *message,double ang);
+void lxprintlat1(char *message,double ang);
 void config_NTP(int zone,int dls );
 #endif

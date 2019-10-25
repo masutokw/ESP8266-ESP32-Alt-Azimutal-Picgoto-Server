@@ -19,7 +19,8 @@ void nunchuck_init(int sda, int scl)
   Wire.write(0x00);
   Wire.endTransmission();
 
-  delay(1);
+  delay(1); 
+  lastx=lasty=1;
 }
 
 void nunchuck_read(void)

@@ -39,7 +39,7 @@ ESP8266WebServer serverweb(80);
 char buff[50] = "Waiting for connection..";
 extern char  response[200];
 mount_t *telescope;
-c_star st_now, st_target, st_current;
+c_star volatile st_now, st_target, st_current;
 String ssi;
 String pwd;
 Ticker speed_control_tckr, counters_poll_tkr;
@@ -235,7 +235,7 @@ void loop()
   serverweb.handleClient();
 
  #ifdef  NUNCHUCK_CONTROL
-  nunchuck_read() ;
+  nunchuck_read();
 #endif
 
 #ifdef OLED_DISPLAY

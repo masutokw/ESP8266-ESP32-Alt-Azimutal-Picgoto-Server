@@ -19,7 +19,6 @@ double sidereal_timeGMT (double longitude, int tz)
   sidereal = fmod (sidereal + longitude, 360.0);
   /* change to hours */
   sidereal /= 15.0 ;
-
   return sidereal;
 }
 
@@ -81,48 +80,57 @@ void lxprintra(char *message, double ang)
   sprintf(message, "%02d:%02d:%02d", gra, min, sec);
   //APPEND
 };
+
+void lxprintaz1(char *message,double ang)
+{
+
+
+ int x = ang * RAD_TO_DEG * 3600.0 ;
+  int gra = x / 3600;
+  int temp = (x % 3600);
+  int min = temp / 60;
+  int sec = temp % 60;
+  sprintf(message, "%03d%c%02d:%02d#", gra,225, min, sec);
+}
+
+void lxprintlat1(char *message,double ang)
+{
+
+  int x = ang  * 3600.0;
+  char c = '+';
+  if (x < 0)
+  {
+    x = -x;
+    c = '-';
+  }
+  int gra = x / 3600;
+  int temp = (x % 3600);
+  int min = temp / 60;
+  int sec = temp % 60;
+  sprintf(message, "%c%02d%c%02d#", c, gra, 225, min);
+}
+
+void lxprintlong1(char *message,double ang)
+{
+
+  int x = ang * 3600.0;
+  char c = '+';
+  if (x < 0)
+  {
+    x = -x;
+    c = '-';
+  }
+  int gra = x / 3600;
+  int temp = (x % 3600);
+  int min = temp / 60;
+  int sec = temp % 60;
+  sprintf(message, "%c%03d%c%02d#", c, gra, 225,min);
+}
+
 void config_NTP(int zone, int dls)
 {
   configTime(zone * 3600, dls * 3600 , "0.es.pool.ntp.org", "cuco.rediris.es", "hora.roa.es");
 }
-/*
-void enc_to_eq(double x, double y, double *a, double  *b, char *pier)
-{
-  *a = x;
-  *pier = true;
-  if (y <= M_PI / 2.0) *b = y;
-  else if (y < (M_PI * 3 / 2))
-  {
-    {
-      *b = M_PI - y ;
-      if (x < M_PI) *a += M_PI ;
-      else *a -= M_PI;
-      *pier = false;
-    }
-
-  }
-  else  *b = y - M_PI * 2;
-
-}
-
-
-void eq_to_enc(double *ra, double *dec, double a, double  b, int pier)
-{
-
-  if (!pier)
-  {
-    *ra = a;
-    if (b < 0.0)  *dec = b + 2 * M_PI;
-    else *dec = b;
-  }
-  else
-  {
-    *dec = M_PI - b;
-    if (a >= M_PI) *ra = a - M_PI;
-    else *ra = M_PI + a;
-  }
-}
-//output hours
 double sidereal_timeGMT_alt(double longitude)
 {
   double temp = (millis() - sdt_millis) / (1000.0 * 3600.0);
@@ -131,4 +139,4 @@ double sidereal_timeGMT_alt(double longitude)
   return temp;
 }
 
-*/
+

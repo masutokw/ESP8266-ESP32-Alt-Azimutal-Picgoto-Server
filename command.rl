@@ -46,8 +46,6 @@ void set_cmd_exe(char cmd,long date)
     {
     case 'r':
         mount.ra_target=date;
-
-
         break;
     case 'd':
         mount.dec_target=date ;
@@ -88,7 +86,10 @@ void sync_all(void)
 {int temp;
     // mount_test->track=FALSE;
    telescope->altmotor->slewing= telescope->azmotor->slewing=FALSE;
-   sync_ra_dec(telescope,mount.ra_target*15.0*SEC_TO_RAD,mount.dec_target*SEC_TO_RAD);
+   telescope->ra_target=mount.ra_target*15.0*SEC_TO_RAD;
+   telescope->dec_target=mount.dec_target*SEC_TO_RAD;
+   telescope->sync=TRUE;
+   //sync_ra_dec(telescope);
     sprintf(tmessage,"sync#");
     APPEND
 
@@ -128,13 +129,15 @@ long command( char *str )
         action rate {select_rate(telescope,stcmd); }
         action return_ra { lxprintra1(tmessage, st_current.ra); APPEND;}
         action return_dec {lxprintde1(tmessage, st_current.dec); APPEND;}
-        action return_ra_target { ;}
-        action return_dec_target {;}
+        action return_az { lxprintaz1(tmessage, st_current.az); APPEND;}
+        action return_alt {lxprintde1(tmessage, st_current.alt); APPEND;}
+        action return_ra_target { lxprintra1(tmessage, st_target.ra); APPEND;}
+        action return_dec_target {lxprintde1(tmessage, st_target.dec); APPEND;}
         action return_date {lxprintdate();}
         action return_site { lxprintsite();}
         action ok {;} # {sprintf(tmessage,"1");}
-        action return_longitude {sprintf(tmessage,"-004*12#");}
-        action return_lat {sprintf(tmessage,"+36*43#");}
+        action return_longitude {lxprintlong1(tmessage,telescope->longitude);APPEND;}
+        action return_lat {lxprintlat1(tmessage,telescope->lat);APPEND;}
         action return_sid_time { ;}
         action sync {sync_all();}
         action rafrac {deg+=(fc-'0')*6;}
@@ -149,6 +152,7 @@ long command( char *str )
         action addsec {deg+=sec;}
         action storecmd {stcmd=fc;}
         action setdate {set_date(sec,min,deg);}
+        action return_align{sprintf(tmessage,"A"); APPEND; }
 
 #definicion sintaxis LX terminos auxiliares
         sexmin =  ([0-5][0-9])$getmin@addmin ;
@@ -157,13 +161,14 @@ long command( char *str )
         RA = ([0-2] digit) $getgrads   ':' sexmin ('.'digit@rafrac | ':' sex) ;
         date = digit{2}$getmin "/" digit{2}$getsec "/" digit{2}$getgrads ;
 #Definicion sintaxis comandos
-        Poll= 'G'( 'R'%return_ra | [DZA]%return_dec |'r'%return_ra_target | 'd'%return_dec_target | 'L'%return_local_time |'S'%return_local_time|'C'%return_date|'M'%return_site|'t'%return_longitude|'g'%return_lat);
+        Poll= 'G'( 'R'%return_ra | 'D'%return_dec| 'Z'%return_az |'A'%return_alt |'r'%return_ra_target | 'd'%return_dec_target | 'L'%return_local_time |'S'%return_local_time|'C'%return_date|'M'%return_site|'t'%return_longitude|'g'%return_lat);
         Move = 'M' ([nswe]@storecmd %dir | 'S'%Goto);
         Rate = 'R' [CGMS]@storecmd (''|[0-4]) %rate;
         Set='S'(((([dazgt]@storecmd (''|space) deg ) | ([rLS]@storecmd (''|space) RA))%set_cmd_exec)|'C 'date%setdate|'w 3'%ok);
         Sync = "CM"(''|'R')%sync;
         Stop ='Q' (''|[nsew])@storecmd %stop;
-        main := (''|'#') (':' (Set | Move | Stop|Rate | Sync | Poll) '#')*  ;
+        Mode =''@return_align;
+        main :=  ((0x06)Mode |''|'#') (':' (Set | Move | Stop|Rate | Sync | Poll) '#')* ;
 
 # Initialize and execute.
         write init;

@@ -62,6 +62,7 @@ void setposition(motor_t* mt,int pos)
 {
     set_motor_counter(mt->id,pos);
     mt->counter=pos;
+     mt->position =  mt->resolution*pos;
 }
 void go_to(motor_t* mt, double position, double speed)
 {
@@ -137,4 +138,3 @@ void settargetspeed(motor_t* mt, double tspeed)
     if (fabs(tspeed) <= mt->maxspeed) mt->targetspeed = tspeed;
     else mt->targetspeed=mt->maxspeed *sign (tspeed);
 }
-
