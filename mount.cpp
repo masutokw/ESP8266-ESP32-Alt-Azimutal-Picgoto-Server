@@ -331,10 +331,6 @@ void track(mount_t *mt)
         }
         else
         {
-            // settargetspeed(mt->azmotor, az_frate);
-            // settargetspeed(mt->altmotor, alt_frate);
-            //  if (trackmode == 1) {
-            //    tracking = (speed_y == 0.0) && (speed_x == 0.0);
             st_target.ra = st_current.ra;
             st_target.dec = st_current.dec;
             one= TRUE;

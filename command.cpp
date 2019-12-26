@@ -1,5 +1,5 @@
 
-/* #line 1 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 1 "command.rl"
 /*
  * Parses LX200 protocol.
  */
@@ -112,7 +112,7 @@ long command( char *str )
     response[0]=0;
 
     
-/* #line 2 "command.cpp" */
+#line 2 "command.cpp"
 static const char _command_actions[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
 	3, 1, 4, 1, 5, 1, 6, 1, 
@@ -230,7 +230,7 @@ static const char _command_trans_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	39, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 23, 29, 19, 
-	43, 31, 17, 21, 27, 37, 25, 35, 
+	43, 31, 17, 21, 27, 35, 25, 37, 
 	0, 47, 11, 9, 13, 47, 47, 15, 
 	0, 0, 47, 47, 0, 0, 3, 3, 
 	0, 5, 5, 0, 1, 1, 49, 0, 
@@ -247,19 +247,19 @@ static const int command_error = 0;
 static const int command_en_main = 58;
 
 
-/* #line 115 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 115 "command.rl"
 
 
 
 
 
     
-/* #line 135 "command.cpp" */
+#line 135 "command.cpp"
 	{
 	cs = command_start;
 	}
 
-/* #line 138 "command.cpp" */
+#line 138 "command.cpp"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -334,95 +334,95 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-/* #line 122 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 122 "command.rl"
 	{ADD_DIGIT(deg,(*p)); }
 	break;
 	case 1:
-/* #line 123 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 123 "command.rl"
 	{ADD_DIGIT(min,(*p)); }
 	break;
 	case 2:
-/* #line 124 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 124 "command.rl"
 	{ADD_DIGIT(sec,(*p)); }
 	break;
 	case 3:
-/* #line 125 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 125 "command.rl"
 	{ neg=-1;}
 	break;
 	case 4:
-/* #line 126 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 126 "command.rl"
 	{mount_move(telescope,stcmd);}
 	break;
 	case 5:
-/* #line 127 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 127 "command.rl"
 	{goto_ra_dec(telescope,mount.ra_target*15.0*SEC_TO_RAD,mount.dec_target*SEC_TO_RAD); sprintf(tmessage,"0");APPEND;}
 	break;
 	case 6:
-/* #line 128 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 128 "command.rl"
 	{mount_stop(telescope,stcmd);}
 	break;
 	case 7:
-/* #line 129 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 129 "command.rl"
 	{select_rate(telescope,stcmd); }
 	break;
 	case 8:
-/* #line 130 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 130 "command.rl"
 	{ lxprintra1(tmessage, st_current.ra); APPEND;}
 	break;
 	case 9:
-/* #line 131 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 131 "command.rl"
 	{lxprintde1(tmessage, st_current.dec); APPEND;}
 	break;
 	case 10:
-/* #line 132 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 132 "command.rl"
 	{ lxprintaz1(tmessage, st_current.az); APPEND;}
 	break;
 	case 11:
-/* #line 133 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 133 "command.rl"
 	{lxprintde1(tmessage, st_current.alt); APPEND;}
 	break;
 	case 12:
-/* #line 134 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 134 "command.rl"
 	{ lxprintra1(tmessage, st_target.ra); APPEND;}
 	break;
 	case 13:
-/* #line 135 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 135 "command.rl"
 	{lxprintde1(tmessage, st_target.dec); APPEND;}
 	break;
 	case 14:
-/* #line 136 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 136 "command.rl"
 	{lxprintdate();}
 	break;
 	case 15:
-/* #line 137 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 137 "command.rl"
 	{ lxprintsite();}
 	break;
 	case 16:
-/* #line 138 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 138 "command.rl"
 	{;}
 	break;
 	case 17:
-/* #line 139 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 139 "command.rl"
 	{lxprintlong1(tmessage,telescope->longitude);APPEND;}
 	break;
 	case 18:
-/* #line 140 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 140 "command.rl"
 	{lxprintlat1(tmessage,telescope->lat);APPEND;}
 	break;
 	case 19:
-/* #line 142 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 142 "command.rl"
 	{sync_all();}
 	break;
 	case 20:
-/* #line 143 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 143 "command.rl"
 	{deg+=((*p)-'0')*6;}
 	break;
 	case 21:
-/* #line 144 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 144 "command.rl"
 	{ ltime();}
 	break;
 	case 22:
-/* #line 145 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 145 "command.rl"
 	{
             set_cmd_exe(stcmd,(neg*(deg )));
             sprintf(tmessage,"1");
@@ -431,22 +431,22 @@ _match:
         }
 	break;
 	case 23:
-/* #line 151 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 151 "command.rl"
 	{deg=deg*3600+min*60;}
 	break;
 	case 24:
-/* #line 152 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 152 "command.rl"
 	{deg+=sec;}
 	break;
 	case 25:
-/* #line 153 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 153 "command.rl"
 	{stcmd=(*p);}
 	break;
 	case 26:
-/* #line 154 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 154 "command.rl"
 	{set_date(sec,min,deg);}
 	break;
-/* #line 297 "command.cpp" */
+#line 297 "command.cpp"
 		}
 	}
 
@@ -459,7 +459,7 @@ _again:
 	_out: {}
 	}
 
-/* #line 176 "C:\\Users\\Angel\\Documents\\Arduino\\espgtalt\\espgtalt\\command.rl" */
+#line 176 "command.rl"
 
 
 //---------------------------------------------------------------------------------------------------------------------

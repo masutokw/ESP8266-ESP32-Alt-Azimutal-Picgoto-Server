@@ -161,7 +161,7 @@ long command( char *str )
         RA = ([0-2] digit) $getgrads   ':' sexmin ('.'digit@rafrac | ':' sex) ;
         date = digit{2}$getmin "/" digit{2}$getsec "/" digit{2}$getgrads ;
 #Definicion sintaxis comandos
-        Poll= 'G'( 'R'%return_ra | 'D'%return_dec| 'Z'%return_az |'A'%return_alt |'r'%return_ra_target | 'd'%return_dec_target | 'L'%return_local_time |'S'%return_local_time|'C'%return_date|'M'%return_site|'t'%return_longitude|'g'%return_lat);
+        Poll= 'G'( 'R'%return_ra | 'D'%return_dec| 'Z'%return_az |'A'%return_alt |'r'%return_ra_target | 'd'%return_dec_target | 'L'%return_local_time |'S'%return_local_time|'C'%return_date|'M'%return_site|'g'%return_longitude|'t'%return_lat);
         Move = 'M' ([nswe]@storecmd %dir | 'S'%Goto);
         Rate = 'R' [CGMS]@storecmd (''|[0-4]) %rate;
         Set='S'(((([dazgt]@storecmd (''|space) deg ) | ([rLS]@storecmd (''|space) RA))%set_cmd_exec)|'C 'date%setdate|'w 3'%ok);
