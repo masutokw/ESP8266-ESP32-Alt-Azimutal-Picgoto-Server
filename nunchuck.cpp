@@ -22,10 +22,9 @@ void nunchuck_init(int sda, int scl)
   delay(1); 
   lastx=lasty=1;
 }
-
 void nunchuck_read(void)
 { int count = 0;
-
+ int pressed;
 
   Wire.requestFrom(ADDRESS, 6);
   while (Wire.available())
@@ -33,15 +32,18 @@ void nunchuck_read(void)
     chuckbuffer[count] = Wire.read();
     count++;
   }
-
+  pressed=~chuckbuffer[5]&0x03;
+//if (pressed) telescope->srate = pressed;
   if (lastx != (chuckbuffer[0] /= 86)) {
-    telescope->srate = chuckbuffer[5]&0x03;
+  
+
+    //telescope->srate = ~chuckbuffer[5]&0x03;
     switch (chuckbuffer[0]) {
-      case 0 : mount_move(telescope, 'e'); //Serial.println("Left");
+      case 0 : if (pressed==2) telescope->srate = 3; else  mount_move(telescope, 'e'); //Serial.println("Left");
         break;
       case 1 : mount_stop(telescope, 'w'); //Serial.println("CenterX");
         break;
-      case 2 :  mount_move(telescope, 'w'); //Serial.println("Rigth");
+      case 2 :if (pressed==2) telescope->srate = 2 ;else  mount_move(telescope, 'w'); //Serial.println("Rigth");
         break;
       default:  break;
 
@@ -50,13 +52,13 @@ void nunchuck_read(void)
 
   lastx = chuckbuffer[0];
   if (lasty != (chuckbuffer[1]  /= 86)) {
-    telescope->srate = chuckbuffer[5]&0x03;
+ //   telescope->srate = ~chuckbuffer[5]&0x03;
     switch (chuckbuffer[1] ) {
-      case 0 :  mount_move(telescope, 's'); //Serial.println("Down");
+      case 0 :  if (pressed==2) telescope->srate = 0;else mount_move(telescope, 's'); //Serial.println("Down");
         break;
       case 1 :  mount_stop(telescope, 's'); // Serial.println("CenterY");
         break;
-      case 2 : mount_move(telescope, 'n'); //Serial.println("Up");
+      case 2 :if (pressed==2) telescope->srate = 1;else mount_move(telescope, 'n'); //Serial.println("Up");
         break;
       default:  break;
 
@@ -72,4 +74,3 @@ void nunchuck_read(void)
 
   delay(1);
 }
-
