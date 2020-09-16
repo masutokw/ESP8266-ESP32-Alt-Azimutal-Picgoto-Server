@@ -2,6 +2,10 @@
 #include "time.h"
 #include "webserver.h"
 extern char one;
+extern int  focuspeed;
+extern int  focuspeed_low;
+extern int focusmax;
+
 long getDecimal(float val)
 {
   int intPart = int(val);
@@ -34,7 +38,7 @@ String getContentType(String filename)
 void handleConfig()
 {
   String msg;
-
+  time_t now;
   if (serverweb.hasArg("SSID") && serverweb.hasArg("PASSWORD"))
   {
     String ssid = serverweb.arg("SSID") + "\n" + serverweb.arg("PASSWORD") + "\n";
@@ -62,12 +66,15 @@ void handleConfig()
     msg += "\n" + serverweb.arg("PRESCALER");
     msg += "\n" + serverweb.arg("LONGITUDE");
     msg += "\n" + serverweb.arg("LATITUDE");
-    msg += "\n" + serverweb.arg("TIMEZONE") + "\n";
+    msg += "\n" + serverweb.arg("TIMEZONE"); 
+    msg += "\n" + serverweb.arg("FOCUSMAX");
+    msg += "\n" + serverweb.arg("FOCUSPEEDLOW");
+    msg += "\n" + serverweb.arg("FOCUSPEED")+ "\n";
     String temp = serverweb.arg("SLEW");
     telescope->rate[3][0] = temp.toFloat();
     temp = serverweb.arg("SLEWA");
     telescope->rate[3][1] = temp.toFloat();
-    Serial.println("Log in Failed");
+  //  Serial.println("Log in Failed");
 
     f = SPIFFS.open("/mount.config", "w");
     if (!f)
@@ -79,6 +86,8 @@ void handleConfig()
       f.println(msg);
       f.close ();
       readconfig(telescope);
+      now = time(nullptr);
+      msg=" Config Saved at" +String(ctime(&now));
     }
     f.close ();
   }
@@ -110,6 +119,11 @@ void handleConfig()
   content += "<td><input type='number' step='0.01' name='SLEWA'" + String(N_STYLE) + String(telescope->rate[3][1]) + "'></td></tr>";
 
   content += "<tr><td>Prescaler</td><td><input type='number' name='PRESCALER' style='text-align: right;height:20px; width:50px' value ='" + String(telescope->prescaler) + "' uSec</td></tr></table></fieldset>";
+  content += "<fieldset style=\"width:15%\"> <legend>Focuser</legend>";
+  content += "<table style='width:200px'>";
+  content += "<tr><td>Focus Max:</td><td><input type='number'step='1' name='FOCUSMAX' style='text-align: right;height:20px; width:70px' value ='" + String(focusmax) + "'></td></tr>";
+  content += "<tr><td>Low Speed:</td><td><input type='number'step='1' name='FOCUSPEEDLOW' style='text-align: right;height:20px; width:70px' value ='" + String(focuspeed_low) + "'></td></tr>";
+  content += "<tr><td>Speed</td><td><input type='number'step='1' name='FOCUSPEED' style='text-align: right;height:20px; width:70px' value ='" + String(focuspeed) + "'></td></tr></table></fieldset>";
   content += "<fieldset style=\"width:15%\"> <legend>Geodata</legend>";
   content += "<table style='width:200px'>";
   content += "<tr><td>Longitude:</td><td><input type='number' step='any' id=\"lon\" name='LONGITUDE' style='text-align: right;height:20px; width:80px' value ='" +
@@ -118,7 +132,9 @@ void handleConfig()
              String(int(telescope->lat)) + "." + String(getDecimal(telescope->lat)) + "'></td></tr>";
   //  content+= "<button onclick=\"getLocation()\">Try It</button><br>";
   content += "<tr><td>GMT offset:</td><td><input type='number'step='1' name='TIMEZONE' style='text-align: right;height:20px; width:30px' value ='" + String(telescope->time_zone) + "'></td></tr></table>";
-  content += "<input type='submit' name='SUBMIT' value='Submit'></fieldset></form>" + msg + "<br>";
+  content += "<input type='submit' name='SUBMIT' value='Submit'></fieldset></form>"+msg+"<br>";
+  
+  content += "<button onclick=\"location.href='/time'\"  type=\"button\">Sync Date/Time</button>";
   content += "<button onclick=\"location.href='/park'\"  type=\"button\">Park telescope</button>";
   content += "<button onclick=\"location.href='/restart'\"  type=\"button\">Restart device</button><br>";
   content += " </body></html>";
@@ -137,9 +153,9 @@ void handlePark(void)
   content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
   content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
   content += "Alt res:" + String(RAD_TO_ARCS * telescope->altmotor->resolution) + "<br>";
-  content += "Az res:" + String(1.0 / telescope->azmotor->resolution) + "<br>";
+  content += "Az res:" + String(RAD_TO_ARCS *  telescope->azmotor->resolution) + "<br>";
   content += "Sideral:" + String(sidereal_timeGMT (telescope->longitude, telescope->time_zone)) + "<br>";
-  content += "TIme :" + String(ctime(&now)) + "<br>";
+  content += "Time :" + String(ctime(&now)) + "<br>";
   content += "<button onclick=\"location.href='/'\"  type=\"button\">Back</button><br>";
   content += "</body></html>";
   serverweb.send(200, "text/html", content);
@@ -194,6 +210,7 @@ void handleRestart(void)
   content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
   content += "</body></html>";
   serverweb.send(200, "text/html", content);
+  delay(1000);
   ESP.restart();
 }
 bool handleFileRead(String path)
@@ -221,6 +238,8 @@ void initwebserver(void)
   serverweb.on("/time", handleTime);
   serverweb.on("/sync", handleSync);
   serverweb.on("/restart", handleRestart);
+//  serverweb.on("/focus", handleFocus);
+  
   // serverweb.on("/formatfilesystem",handleFormat)
   serverweb.onNotFound([]()
   {

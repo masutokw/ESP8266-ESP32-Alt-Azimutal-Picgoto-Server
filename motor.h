@@ -1,5 +1,6 @@
 #ifndef MOTOR_H_INCLUDED
 #define MOTOR_H_INCLUDED
+#include "piclevel.h"
 #include <ESP8266WiFi.h>
 #include <math.h>
 #define TIM_TICK 4e-7
@@ -10,7 +11,7 @@ typedef struct
            targetspeed,speed,current_speed,
            acceleration,
            timertick,maxspeed;
-    int counter,maxcounter,slewing;
+    int counter,maxcounter,slewing,auxcounter;
     char id;
 } motor_t;
 

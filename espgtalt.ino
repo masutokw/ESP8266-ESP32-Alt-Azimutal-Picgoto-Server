@@ -6,14 +6,14 @@
 #include <Ticker.h>
 #include <Wire.h>
 #include "misc.h"
-#include "piclevel.h"
 #include "mount.h"
 #include "webserver.h"
 #include "taki.h"
+#include "piclevel.h"
 //Comment out undesired Feature
 //---------------------------
 #define NUNCHUCK_CONTROL
-//#define FIXED_IP 15
+#define FIXED_IP 21
 //#define OLED_DISPLAY
 //--------------------------------
 #ifdef  NUNCHUCK_CONTROL
@@ -27,9 +27,9 @@
 #include <FS.h>
 extern long sdt_millis;
 //comment wifipass.h and uncomment for your  wifi parameters
-//#include "wifipass.h"
-const char* ssid = "MyWIFI";
-const char* password = "Mypassword";
+#include "wifipass.h"
+//const char* ssid = "MyWIFI";
+//const char* password = "Mypassword";
 //extern picmsg  msg;
 extern volatile int state;
 WiFiServer server(10001);
@@ -243,6 +243,3 @@ void loop()
 #endif
 
 }
-
-
-

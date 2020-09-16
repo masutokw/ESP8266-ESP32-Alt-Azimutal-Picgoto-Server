@@ -3,6 +3,9 @@
 
 extern long sdt_millis;
 extern c_star  st_now, st_target, st_current;
+extern int  focuspeed;
+extern int  focuspeed_low;
+extern int focusmax;
 char sel_flag;
 char volatile one=FALSE;
 mount_t* create_mount(void)
@@ -238,6 +241,16 @@ int readconfig(mount_t *mt)
     mt->time_zone = s.toFloat();
     init_motor( mt->azmotor, AZ_ID, maxcounter, 0, mt->prescaler, mt->maxspeed[0]);
     init_motor( mt->altmotor,  ALT_ID, maxcounteralt, 0, mt->prescaler, mt->maxspeed[1]);
+    //f.close();
+ 
+    s = f.readStringUntil('\n');
+    focusmax= s.toInt();
+    s = f.readStringUntil('\n');
+    focuspeed_low= s.toInt();
+    s = f.readStringUntil('\n');
+    focuspeed= s.toInt();
+
+    
     return 0;
 
 
@@ -319,7 +332,8 @@ void track(mount_t *mt)
             to_alt_az(&st_target);
             //compute delta values :next values from actual values for desired target coordinates
             d_az_r = (st_target.az) - st_current.az;
-            if (fabs(d_az_r) > (M_PI)) d_az_r -= M_2PI;
+           // if (fabs(d_az_r) > (M_PI)) d_az_r -= M_2PI;
+           if (fabs(d_az_r) > (M_PI)) d_az_r -= (M_2PI*sign( d_az_r));
             d_alt_r = (st_target.alt) - st_current.alt;;
             if (fabs(d_alt_r) > (M_PI)) d_alt_r -= M_2PI;
 
