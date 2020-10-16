@@ -2,7 +2,7 @@
 #include "misc.h"
 
 extern long sdt_millis;
-extern c_star  st_now, st_target, st_current;
+extern c_star  st_now, st_target, st_current,st_1,st_2;
 extern int  focuspeed;
 extern int  focuspeed_low;
 extern int focusmax;
@@ -39,6 +39,8 @@ mount_t* create_mount(void)
     m->is_tracking=TRUE;
     m->mount_mode=ALTAZ;
     m->sync=FALSE;
+    m->smode=0;
+
     return m;
 }
 
@@ -48,11 +50,21 @@ int  destroy_mount(mount_t* m)
     free(m->altmotor);
     free(m);
 }
-
+/*
 void thread_motor(mount_t* m)
 {
     speed_up_down(((mount_t*)m)->altmotor);
     speed_up_down(((mount_t*)m)->azmotor);
+}*/
+void thread_motor(mount_t* m)
+{ static  byte n;
+  speed_up_down(((mount_t*)m)->altmotor);
+  speed_up_down(((mount_t*)m)->azmotor);
+ if (sel_flag)
+    {
+        pollcounters( AZ_ID);
+        sel_flag = false;
+    }
 }
 void thread_motor2(mount_t* m)
 {
@@ -75,7 +87,7 @@ int goto_ra_dec(mount_t *mt,double ra,double dec)
 
 int sync_ra_dec(mount_t *mt)
 {
-   // one=FALSE;
+    // one=FALSE;
 
     while (Serial.available()) Serial.read();
     st_current.timer_count =((millis()-sdt_millis)/ 1000.0);//chrono_read(&ti);
@@ -89,7 +101,7 @@ int sync_ra_dec(mount_t *mt)
         setposition(mt->altmotor,st_current.alt/mt->altmotor->resolution);
     else
         setposition(mt->altmotor,( M_2PI+st_current.alt)/mt->altmotor->resolution);
-      mt->sync=FALSE;
+    mt->sync=FALSE;
 }
 
 int mount_stop(mount_t *mt, char direction)
@@ -215,6 +227,7 @@ void mount_lxde_str(char* message, mount_t *mt)
 int readconfig(mount_t *mt)
 {
     int maxcounter, maxcounteralt ;
+    double tmp;
     File f = SPIFFS.open("/mount.config", "r");
     if (!f) return -1;
     String s = f.readStringUntil('\n');
@@ -239,18 +252,23 @@ int readconfig(mount_t *mt)
     mt->lat = s.toFloat();
     s = f.readStringUntil('\n');
     mt->time_zone = s.toFloat();
-    init_motor( mt->azmotor, AZ_ID, maxcounter, 0, mt->prescaler, mt->maxspeed[0]);
-    init_motor( mt->altmotor,  ALT_ID, maxcounteralt, 0, mt->prescaler, mt->maxspeed[1]);
+
     //f.close();
- 
+
     s = f.readStringUntil('\n');
     focusmax= s.toInt();
     s = f.readStringUntil('\n');
     focuspeed_low= s.toInt();
     s = f.readStringUntil('\n');
     focuspeed= s.toInt();
+    s = f.readStringUntil('\n');
+    tmp = s.toFloat();
+    init_motor( mt->azmotor, AZ_ID, maxcounter, 0, mt->prescaler, mt->maxspeed[0],tmp);
+    s = f.readStringUntil('\n');
+     tmp =s.toFloat();
+    init_motor( mt->altmotor,  ALT_ID, maxcounteralt, 0, mt->prescaler, mt->maxspeed[1],tmp);
 
-    
+
     return 0;
 
 
@@ -269,7 +287,22 @@ void mount_park(mount_t *mt)
     delay(10);
 }
 
+void mount_home_set(mount_t *mt)
 
+{
+    mt->altmotor->slewing = mt->azmotor->slewing = mt->is_tracking=FALSE;
+    mt->altmotor->targetspeed = 0.0;
+    mt->azmotor->targetspeed = 0.0;
+
+    delay(100);
+    setposition(mt->azmotor,M_PI/mt->azmotor->resolution);
+    delay(10);
+    setposition(mt->altmotor,(M_PI/4)/mt->altmotor->resolution);
+//   save_counters(ALT_ID);
+    //  delay(10);
+    //  save_counters(AZ_ID);
+    //  delay(10);
+}
 void  tak_init(mount_t *mt)
 {
 
@@ -279,28 +312,28 @@ void  tak_init(mount_t *mt)
     if  (mt->mount_mode == ALTAZ)
     {
 
-        set_star(&st_now, temp + 90.0, 0.0, 90.0, 0.0, 0);
-        init_star(1, &st_now);
-        set_star(&st_now,temp, mt->lat, 180.00, 89.99, 0);
-        init_star(2, &st_now);
+        set_star(&st_1, temp + 90.0, 0.0, 90.0, 0.0, 0);
+        //   init_star(1, &st_now);
+        set_star(&st_2,temp, mt->lat, 180.00, 89.99, 0);
+        //   init_star(2, &st_now);
 
     }
     else if (mt->mount_mode == EQ)
     {
         double ra    ;
-        set_star(&st_now,  temp, 0.0, 180.0, 0.0, 0);
-        init_star(1, &st_now);
-        ra = st_now.ra + M_PI / 2.0;
+        set_star(&st_1,  temp, 0.0, 180.0, 0.0, 0);
+        //   init_star(1, &st_now);
+        ra = st_1.ra + M_PI / 2.0;
         if (ra < 0) ra += M_2PI;
         if (mt->lat >= 0.0)
-            set_star(&st_now, ra * RAD_TO_DEG, 45, 90, 45, 0);
+            set_star(&st_2, ra * RAD_TO_DEG, 45, 90, 45, 0);
         else
-            set_star(&st_now, ra * RAD_TO_DEG, -45, 270, 45, 0);
-        init_star(2, &st_now);
+            set_star(&st_2, ra * RAD_TO_DEG, -45, 270, 45, 0);
+        //  init_star(2, &st_now);
 
 
     }
-    compute_trasform();
+    compute_trasform(&st_1,&st_2);
     set_star(&st_now,temp,mt->lat, 0.0, 0.0,0);
     to_alt_az(&st_now);
     //  is_aligned=0;
@@ -332,8 +365,8 @@ void track(mount_t *mt)
             to_alt_az(&st_target);
             //compute delta values :next values from actual values for desired target coordinates
             d_az_r = (st_target.az) - st_current.az;
-           // if (fabs(d_az_r) > (M_PI)) d_az_r -= M_2PI;
-           if (fabs(d_az_r) > (M_PI)) d_az_r -= (M_2PI*sign( d_az_r));
+            // if (fabs(d_az_r) > (M_PI)) d_az_r -= M_2PI;
+            if (fabs(d_az_r) > (M_PI)) d_az_r -= (M_2PI*sign( d_az_r));
             d_alt_r = (st_target.alt) - st_current.alt;;
             if (fabs(d_alt_r) > (M_PI)) d_alt_r -= M_2PI;
 
@@ -356,3 +389,33 @@ void track(mount_t *mt)
     sel_flag = true;
 
 }
+
+void align_sync_all(mount_t *mt,long ra,long dec)
+{
+    switch (mt->smode)
+    {
+    case 0:
+        mt->altmotor->slewing= mt->azmotor->slewing=FALSE;
+        mt->ra_target=ra*15.0*SEC_TO_RAD;
+        mt->dec_target=dec*SEC_TO_RAD;
+        mt->sync=TRUE;
+        break;
+    case 1:
+        reset_transforms(0.0, 0.0, 0.0);
+        set_star(&st_1, ra*(15.0/3600.0), dec/3600.0, mt->azmotor->position*RAD_TO_DEG,RAD_TO_DEG*mt->altmotor->position,  ((millis()-sdt_millis)/ 1000.0));
+        // init_star(1, &st_1);
+        break;
+    case 2:
+        set_star(&st_2,ra*(15.0/3600.0), dec/3600.0,RAD_TO_DEG *mt->azmotor->position,RAD_TO_DEG*mt->altmotor->position,  ((millis()-sdt_millis)/ 1000.0));
+        // init_star(2, &st_2);
+        mt->is_tracking = one = FALSE;
+        compute_trasform(&st_1,&st_2);
+        mt->is_tracking = TRUE;
+
+        break;
+    default:
+        break;
+    }
+
+};
+

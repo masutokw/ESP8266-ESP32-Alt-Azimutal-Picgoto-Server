@@ -9,7 +9,7 @@ const int debounceDelay = 50;
 int bpin[4]= {2,0,4,5};
 
 
-void onChange(int b)
+void  ICACHE_RAM_ATTR onChange(int b)
 {
     int reading = digitalRead(bpin[b]);
     if(reading == state[b]) return;
@@ -24,19 +24,19 @@ void onChange(int b)
     event[b] =state[b];
 
 }
-void onChange_North(void)
+void  ICACHE_RAM_ATTR onChange_North(void)
 {
     onChange(0);
 }
-void onChange_South(void)
+void  ICACHE_RAM_ATTR onChange_South(void)
 {
     onChange(1);
 }
-void onChange_West(void)
+void  ICACHE_RAM_ATTR onChange_West(void)
 {
     onChange(2);
 }
-void onChange_East(void)
+void  ICACHE_RAM_ATTR onChange_East(void)
 {
     onChange(3);
 }
@@ -107,4 +107,3 @@ void pad_Init(void)
     attachInterrupt(bpin[3], onChange_East, CHANGE);
 
 }
-

@@ -1,5 +1,5 @@
 
-#line 1 "command.rl"
+/* #line 1 "command.rl" */
 /*
  * Parses LX200 protocol.
  */
@@ -27,6 +27,7 @@ struct _telescope_
     char day,month,year,dayofyear;
 }
 mount;
+extern long sdt_millis;
 extern mount_t *telescope;
 void lxprintdate(void)
 {
@@ -60,11 +61,11 @@ void set_cmd_exe(char cmd,long date)
         break;
     case 't':
         mount.lat=date ;
-        telescope->lat=date;
+        telescope->lat=date/3600.0;
         break;
     case 'g':
-        telescope->longitude=date ;
-         telescope->longitude;
+        mount.longitude=date ;
+        telescope->longitude=date/3600.0;
         break;
     case 'L' :
         //timer0SetOverflowCount((long) (30.518 *date));
@@ -75,27 +76,13 @@ void set_cmd_exe(char cmd,long date)
     }
 }
 void set_date( int day,int month,int year)
-{
-
-    mount.month=month;
+{   mount.month=month;
     mount.day=day;
     mount.year=year;
     mount.dayofyear=day+month_days[month-1];
     if  ((month>2)&&(year%4==0)) mount.dayofyear++;
-
 }
-void sync_all(void)
-{int temp;
-    // mount_test->track=FALSE;
-   telescope->altmotor->slewing= telescope->azmotor->slewing=FALSE;
-   telescope->ra_target=mount.ra_target*15.0*SEC_TO_RAD;
-   telescope->dec_target=mount.dec_target*SEC_TO_RAD;
-   telescope->sync=TRUE;
-   //sync_ra_dec(telescope);
-    sprintf(tmessage,"sync#");
-    APPEND
 
-};
 
 
 //----------------------------------------------------------------------------------------
@@ -112,7 +99,7 @@ long command( char *str )
     response[0]=0;
 
     
-#line 2 "command.cpp"
+/* #line 2 "command.cpp" */
 static const char _command_actions[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
 	3, 1, 4, 1, 5, 1, 6, 1, 
@@ -247,19 +234,19 @@ static const int command_error = 0;
 static const int command_en_main = 58;
 
 
-#line 115 "command.rl"
+/* #line 102 "command.rl" */
 
 
 
 
 
     
-#line 135 "command.cpp"
+/* #line 135 "command.cpp" */
 	{
 	cs = command_start;
 	}
 
-#line 138 "command.cpp"
+/* #line 138 "command.cpp" */
 	{
 	int _klen;
 	unsigned int _trans;
@@ -334,95 +321,95 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 122 "command.rl"
+/* #line 109 "command.rl" */
 	{ADD_DIGIT(deg,(*p)); }
 	break;
 	case 1:
-#line 123 "command.rl"
+/* #line 110 "command.rl" */
 	{ADD_DIGIT(min,(*p)); }
 	break;
 	case 2:
-#line 124 "command.rl"
+/* #line 111 "command.rl" */
 	{ADD_DIGIT(sec,(*p)); }
 	break;
 	case 3:
-#line 125 "command.rl"
+/* #line 112 "command.rl" */
 	{ neg=-1;}
 	break;
 	case 4:
-#line 126 "command.rl"
+/* #line 113 "command.rl" */
 	{mount_move(telescope,stcmd);}
 	break;
 	case 5:
-#line 127 "command.rl"
+/* #line 114 "command.rl" */
 	{goto_ra_dec(telescope,mount.ra_target*15.0*SEC_TO_RAD,mount.dec_target*SEC_TO_RAD); sprintf(tmessage,"0");APPEND;}
 	break;
 	case 6:
-#line 128 "command.rl"
+/* #line 115 "command.rl" */
 	{mount_stop(telescope,stcmd);}
 	break;
 	case 7:
-#line 129 "command.rl"
+/* #line 116 "command.rl" */
 	{select_rate(telescope,stcmd); }
 	break;
 	case 8:
-#line 130 "command.rl"
+/* #line 117 "command.rl" */
 	{ lxprintra1(tmessage, st_current.ra); APPEND;}
 	break;
 	case 9:
-#line 131 "command.rl"
+/* #line 118 "command.rl" */
 	{lxprintde1(tmessage, st_current.dec); APPEND;}
 	break;
 	case 10:
-#line 132 "command.rl"
+/* #line 119 "command.rl" */
 	{ lxprintaz1(tmessage, st_current.az); APPEND;}
 	break;
 	case 11:
-#line 133 "command.rl"
+/* #line 120 "command.rl" */
 	{lxprintde1(tmessage, st_current.alt); APPEND;}
 	break;
 	case 12:
-#line 134 "command.rl"
+/* #line 121 "command.rl" */
 	{ lxprintra1(tmessage, st_target.ra); APPEND;}
 	break;
 	case 13:
-#line 135 "command.rl"
+/* #line 122 "command.rl" */
 	{lxprintde1(tmessage, st_target.dec); APPEND;}
 	break;
 	case 14:
-#line 136 "command.rl"
+/* #line 123 "command.rl" */
 	{lxprintdate();}
 	break;
 	case 15:
-#line 137 "command.rl"
+/* #line 124 "command.rl" */
 	{ lxprintsite();}
 	break;
 	case 16:
-#line 138 "command.rl"
+/* #line 125 "command.rl" */
 	{;}
 	break;
 	case 17:
-#line 139 "command.rl"
+/* #line 126 "command.rl" */
 	{lxprintlong1(tmessage,telescope->longitude);APPEND;}
 	break;
 	case 18:
-#line 140 "command.rl"
+/* #line 127 "command.rl" */
 	{lxprintlat1(tmessage,telescope->lat);APPEND;}
 	break;
 	case 19:
-#line 142 "command.rl"
-	{sync_all();}
+/* #line 129 "command.rl" */
+	{ align_sync_all(telescope,mount.ra_target,mount.dec_target); sprintf(tmessage,"sync#");APPEND;}
 	break;
 	case 20:
-#line 143 "command.rl"
+/* #line 130 "command.rl" */
 	{deg+=((*p)-'0')*6;}
 	break;
 	case 21:
-#line 144 "command.rl"
+/* #line 131 "command.rl" */
 	{ ltime();}
 	break;
 	case 22:
-#line 145 "command.rl"
+/* #line 132 "command.rl" */
 	{
             set_cmd_exe(stcmd,(neg*(deg )));
             sprintf(tmessage,"1");
@@ -431,22 +418,22 @@ _match:
         }
 	break;
 	case 23:
-#line 151 "command.rl"
+/* #line 138 "command.rl" */
 	{deg=deg*3600+min*60;}
 	break;
 	case 24:
-#line 152 "command.rl"
+/* #line 139 "command.rl" */
 	{deg+=sec;}
 	break;
 	case 25:
-#line 153 "command.rl"
+/* #line 140 "command.rl" */
 	{stcmd=(*p);}
 	break;
 	case 26:
-#line 154 "command.rl"
+/* #line 141 "command.rl" */
 	{set_date(sec,min,deg);}
 	break;
-#line 297 "command.cpp"
+/* #line 297 "command.cpp" */
 		}
 	}
 
@@ -459,7 +446,7 @@ _again:
 	_out: {}
 	}
 
-#line 176 "command.rl"
+/* #line 163 "command.rl" */
 
 
 //---------------------------------------------------------------------------------------------------------------------

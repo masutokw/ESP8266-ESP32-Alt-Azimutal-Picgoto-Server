@@ -25,7 +25,7 @@ typedef struct
 // c_star st_now,st_target;
 void reset_transforms(c_double az1,c_double az2,c_double az3);
 void init_star(unsigned char index,const c_star *star);
-void compute_trasform(void);
+void compute_trasform(c_star *star1,c_star *star2);
 void to_alt_az(c_star *star);
 void to_equatorial(c_star *star);
 void printm(void);

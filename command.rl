@@ -25,6 +25,7 @@ struct _telescope_
     char day,month,year,dayofyear;
 }
 mount;
+extern long sdt_millis;
 extern mount_t *telescope;
 void lxprintdate(void)
 {
@@ -58,11 +59,11 @@ void set_cmd_exe(char cmd,long date)
         break;
     case 't':
         mount.lat=date ;
-        telescope->lat=date;
+        telescope->lat=date/3600.0;
         break;
     case 'g':
-        telescope->longitude=date ;
-         telescope->longitude;
+        mount.longitude=date ;
+        telescope->longitude=date/3600.0;
         break;
     case 'L' :
         //timer0SetOverflowCount((long) (30.518 *date));
@@ -73,27 +74,13 @@ void set_cmd_exe(char cmd,long date)
     }
 }
 void set_date( int day,int month,int year)
-{
-
-    mount.month=month;
+{   mount.month=month;
     mount.day=day;
     mount.year=year;
     mount.dayofyear=day+month_days[month-1];
     if  ((month>2)&&(year%4==0)) mount.dayofyear++;
-
 }
-void sync_all(void)
-{int temp;
-    // mount_test->track=FALSE;
-   telescope->altmotor->slewing= telescope->azmotor->slewing=FALSE;
-   telescope->ra_target=mount.ra_target*15.0*SEC_TO_RAD;
-   telescope->dec_target=mount.dec_target*SEC_TO_RAD;
-   telescope->sync=TRUE;
-   //sync_ra_dec(telescope);
-    sprintf(tmessage,"sync#");
-    APPEND
 
-};
 
 
 //----------------------------------------------------------------------------------------
@@ -139,7 +126,7 @@ long command( char *str )
         action return_longitude {lxprintlong1(tmessage,telescope->longitude);APPEND;}
         action return_lat {lxprintlat1(tmessage,telescope->lat);APPEND;}
         action return_sid_time { ;}
-        action sync {sync_all();}
+        action sync { align_sync_all(telescope,mount.ra_target,mount.dec_target); sprintf(tmessage,"sync#");APPEND;}
         action rafrac {deg+=(fc-'0')*6;}
         action return_local_time { ltime();}
         action set_cmd_exec {

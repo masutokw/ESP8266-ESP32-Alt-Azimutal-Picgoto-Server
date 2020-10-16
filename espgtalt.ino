@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266HTTPUpdateServer.h>
 #include <time.h>
 #include "sntp.h"
 #include <Ticker.h>
@@ -13,93 +14,52 @@
 //Comment out undesired Feature
 //---------------------------
 #define NUNCHUCK_CONTROL
-#define FIXED_IP 21
+//#define FIXED_IP 21
 //#define OLED_DISPLAY
+//#define PAD
 //--------------------------------
 #ifdef  NUNCHUCK_CONTROL
 #include "nunchuck.h"
 #endif
-
+#define OTA
+#ifdef OTA
+#include <ArduinoOTA.h>
+#include "OTA_helper.hpp"
+#endif
+#define EPOCH_1_1_2019 1546300800
 #define BAUDRATE 19200
 #define MAX_SRV_CLIENTS 3
 #define SPEED_CONTROL_TICKER 10
 #define COUNTERS_POLL_TICKER 100
 #include <FS.h>
 extern long sdt_millis;
-//comment wifipass.h and uncomment for your  wifi parameters
-#include "wifipass.h"
-//const char* ssid = "MyWIFI";
-//const char* password = "Mypassword";
-//extern picmsg  msg;
+//#include "wifipass.h" //comment wifipass.h and uncomment for your  wifi parameters
+const char* ssid = "MyWIFI";
+const char* password = "Mypassword";
 extern volatile int state;
 WiFiServer server(10001);
 WiFiClient serverClients[MAX_SRV_CLIENTS];
 ESP8266WebServer serverweb(80);
+ESP8266HTTPUpdateServer httpUpdater;
 char buff[50] = "Waiting for connection..";
 extern char  response[200];
 mount_t *telescope;
-c_star volatile st_now, st_target, st_current;
+c_star volatile st_now, st_target, st_current, st_1, st_2;
 String ssi;
 String pwd;
 Ticker speed_control_tckr, counters_poll_tkr;
 extern long command( char *str );
 time_t now;
+time_t init_time;
+#ifdef PAD
+#include "pad.h"
+#endif
+
 #ifdef OLED_DISPLAY
 #include "SSD1306.h"
+#include "oled.h"
 //#include "SH1106.h"
-
-#include "pad.h"
-//SSD1306
-SSD1306 display(0x3c, D5, D6);
-
-void oledDisplay()
-{
-  char ra[20] = "";
-  char de[20] = "";
-  //write some information for debuging purpose to OLED display.
-  display.clear();
-  // display.drawString (0, 0, "ESP-8266 PicGoto++ 0.1");
-  // display.drawString(0, 13, String(buff) + "  " + String(response));
-  lxprintra(ra, sidereal_timeGMT_alt(telescope->longitude) * 15.0 * DEG_TO_RAD);
-  display.drawString(0, 9, "LST " + String(ra));
-  // lxprintra(ra, calc_Ra(telescope->azmotor->position, telescope->longitude));
-  // lxprintde(de, telescope->altmotor->position);
-
-  display.drawString(0, 50, "RA:" + String(ra) + " DE:" + String(de));
-  lxprintde(de, telescope->azmotor->delta);
-  display.drawString(0, 36, String(de)); // ctime(&now));
-  display.drawString(0, 18, "MA:" + String(telescope->azmotor->counter) + " MD:" + String(telescope->altmotor->counter));
-  //display.drawString(0, 27, "Dt:" + String(digitalRead(16)));//(telescope->azmotor->slewing));
-  display.drawString(0, 27, "Dt:" + String(digitalRead(16))) + " Rate:" + String(telescope->srate));
-  //unsigned int n= pwd.length();
-  //display.drawString(0, 32,String(pw)+ " "+ String(n));
-  display.drawString(0, 0, ctime(&now));
-  display.display();
-}
-void oled_initscr(void)
-
-{
-  display.init();
-  //  display.flipScreenVertically();
-  display.setFont(ArialMT_Plain_10);
-  display.setTextAlignment(TEXT_ALIGN_LEFT);
-  display.clear();
-  display.drawString(0, 0, "Connecting to " + String(ssid));
-  display.display();
-}
-
-void oled_waitscr(void)
-{
-  display.clear();
-  display.drawString(0, 0, "Connecting to " + String(ssid));
-  IPAddress ip = WiFi.localIP();
-  String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
-  display.drawString(0, 13, "Got IP! :" + ipStr);
-  display.drawString(0, 26, "Waiting for Client");
-  display.display();
-}
-
-
+//SSD1306 display(0x3c, D5, D6);
 #endif
 
 
@@ -161,7 +121,7 @@ void setup()
 #endif
 
   WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP("PGT_ESP", "boquerones");
+  WiFi.softAP("ESP-PGT", "boquerones");
   SPIFFS.begin();
   File f = SPIFFS.open("/wifi.config", "r");
   if (f)
@@ -179,6 +139,19 @@ void setup()
     WiFi.begin((const char*)ss, (const char*)pw);
   }
   else  WiFi.begin(ssid, password);
+
+  f = SPIFFS.open("/network.config", "r");
+  if (f)
+  { IPAddress ip;
+    IPAddress gateway;
+    IPAddress subnet;
+    IPAddress dns;
+    if (ip.fromString(f.readStringUntil('\n')) && subnet.fromString(f.readStringUntil('\n')) && gateway.fromString(f.readStringUntil('\n')) + dns.fromString(f.readStringUntil('\n'))) {
+      WiFi.config(ip, gateway, subnet, dns);
+    }
+
+    f.close();
+  }
 #ifdef FIXED_IP
   IPAddress ip(192, 168, 1, FIXED_IP);
   IPAddress gateway(192, 168, 1, 1);
@@ -192,9 +165,9 @@ void setup()
   while (WiFi.status() != WL_CONNECTED && i++ < 20) delay(500);
   if (i == 21)
   {
-        //hile (1) delay(500);
+    //hile (1) delay(500);
   }
-if  (WiFi.status() != WL_CONNECTED) WiFi.disconnect(true);
+  if  (WiFi.status() != WL_CONNECTED) WiFi.disconnect(true);
 #ifdef OLED_DISPLAY
   oled_waitscr();
 #endif
@@ -209,21 +182,34 @@ if  (WiFi.status() != WL_CONNECTED) WiFi.disconnect(true);
   server.setNoDelay(true);
   telescope = create_mount();
   readconfig(telescope);
+  httpUpdater.setup(&serverweb);
+
   config_NTP(telescope->time_zone, 0);
-  initwebserver();
-  delay (2000) ;
-  now = time(nullptr);
+
+  if  (WiFi.status() == WL_CONNECTED)
+  { int cn = 0;  now = time(nullptr);
+    while ((now < EPOCH_1_1_2019) && (cn++) < 5) {
+      delay(500);
+      now = time(nullptr);
+    }
+    init_time = time(nullptr);
+    initwebserver();
+  }
   tak_init(telescope);
   speed_control_tckr.attach_ms(SPEED_CONTROL_TICKER, thread_motor2, telescope);
   counters_poll_tkr.attach_ms(COUNTERS_POLL_TICKER, track, telescope);
 
-#ifdef OLED_DISPLAY
+#ifdef PAD
   pad_Init();
-#endif // OLED_DISPLAY
+#endif //PAD
 #ifdef NUNCHUCK_CONTROL
   // nunchuck_init(D6, D5);
   nunchuck_init(2, 0);
 #endif
+#ifdef OTA
+  InitOTA();
+#endif
+
 }
 
 void loop()
@@ -233,13 +219,19 @@ void loop()
   now = time(nullptr);
   serverweb.handleClient();
 
- #ifdef  NUNCHUCK_CONTROL
+#ifdef  NUNCHUCK_CONTROL
   nunchuck_read();
 #endif
 
 #ifdef OLED_DISPLAY
-  doEvent();
   oledDisplay();
+#endif
+#ifdef PAD
+  doEvent();
+#endif
+
+#ifdef OTA
+  ArduinoOTA.handle();
 #endif
 
 }

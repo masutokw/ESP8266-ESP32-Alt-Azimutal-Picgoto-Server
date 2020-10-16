@@ -38,6 +38,7 @@ typedef struct
     int time_zone;
     char is_tracking;
     char sync;
+    int smode;
 } mount_t;
 
 mount_t* create_mount(void);
@@ -54,6 +55,8 @@ int goto_ra_dec(mount_t *mt,double ra,double dec);
 void mount_lxde_str(char* message,mount_t *mt);
 /*void mount_lxra_str(char *message,mount_t *mt);*/
 void mount_park(mount_t *mt);
+void mount_home_set(mount_t *mt);
 void  tak_init(mount_t *mt);
 void track(mount_t *mt1);
+void align_sync_all(mount_t *mt,long ra,long dec);
 #endif

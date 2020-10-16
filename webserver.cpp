@@ -1,11 +1,14 @@
 #include <ESP8266WebServer.h>
 #include "time.h"
+#include "taki.h"
 #include "webserver.h"
 extern char one;
 extern int  focuspeed;
 extern int  focuspeed_low;
 extern int focusmax;
-
+extern  int align_star_index;
+extern c_star st_1, st_2;
+extern  time_t init_time;
 long getDecimal(float val)
 {
   int intPart = int(val);
@@ -66,15 +69,17 @@ void handleConfig()
     msg += "\n" + serverweb.arg("PRESCALER");
     msg += "\n" + serverweb.arg("LONGITUDE");
     msg += "\n" + serverweb.arg("LATITUDE");
-    msg += "\n" + serverweb.arg("TIMEZONE"); 
+    msg += "\n" + serverweb.arg("TIMEZONE");
     msg += "\n" + serverweb.arg("FOCUSMAX");
     msg += "\n" + serverweb.arg("FOCUSPEEDLOW");
-    msg += "\n" + serverweb.arg("FOCUSPEED")+ "\n";
+    msg += "\n" + serverweb.arg("FOCUSPEED");
+    msg += "\n" + serverweb.arg("RAMP");
+    msg += "\n" + serverweb.arg("RAMPA") + "\n";
     String temp = serverweb.arg("SLEW");
     telescope->rate[3][0] = temp.toFloat();
     temp = serverweb.arg("SLEWA");
     telescope->rate[3][1] = temp.toFloat();
-  //  Serial.println("Log in Failed");
+    //  Serial.println("Log in Failed");
 
     f = SPIFFS.open("/mount.config", "w");
     if (!f)
@@ -87,7 +92,8 @@ void handleConfig()
       f.close ();
       readconfig(telescope);
       now = time(nullptr);
-      msg=" Config Saved at" +String(ctime(&now));
+      msg = " Config Saved at " + String(ctime(&init_time));
+      msg += "  " + String(ctime(&now));
     }
     f.close ();
   }
@@ -95,49 +101,57 @@ void handleConfig()
   //  Jsc+="} else {x.innerHTML = \"Geolocation not\";}}";
   //  Jsc+=" function showPosition(position) {document.getElementById('lon').value =  position.coords.longitude;document.getElementById('lat').value =  position.coords.latitude;}</script>";
 
-  String content = "<html><body  bgcolor=\"#000000\" text=\"#FFFF00\"><form action='/config' method='POST'><h2>ESP-PGT++ Config</h2>";
+  String content = "<html><style>"+String(BUTT)+String(TEXTT)+"</style>";
+  content+="<body  bgcolor=\"#000000\" text=\"#FF4500\"><form action='/config' method='POST'><h2>ESP-PGT++ AltAz Config</h2>";
   // content+=Jsc;
-  content += "<fieldset style=\"width:15%\"> <legend>Login  information:</legend>";
+  content += "<fieldset style=\"width:15% ; border-radius:15px\"> <legend>Login  information:</legend>";
   content += "<table style='width:200px'>";
-  content += "<tr><td>SSID</td><td><input type='text' name='SSID' style='height:20px; width:100px' value='" + ssi + "'></td></tr> ";
-  content += "<tr><td>Password:</td><td><input type='password' name='PASSWORD' style='height:20px; width:100px'  value='" + pwd + "'></td></tr></table></fieldset>";
-  content += "<fieldset style=\"width:15%\"> <legend>Mount parameters:</legend>";
-  content += "<table style='width:200px'><tr><th></th><th>RA</th><th>Dec</th></tr>";
-  content += "<tr><td>Counter</td><td> <input type='number' name='MAXCOUNTER' style='text-align: right;height:20px; width:80px' value ='" + String(telescope->azmotor->maxcounter) + "'></td>";
-  content += "<td> <input type='number' name='MAXCOUNTER_ALT' style='text-align: right;height:20px; width:80px' value ='" + String(telescope->altmotor->maxcounter) + "'></td></tr></table><br>";
+ content += "<tr><td>SSID</td><td><input type='text' name='SSID' class=\"text_red\" value='" + ssi + "'></td></tr> ";
+  content += "<tr><td>Password:</td><td><input type='password' name='PASSWORD' class=\"text_red\" value='"+ pwd + "'></td>";
+  content += "<td><button onclick=\"location.href='/network'\" class=\"button_red\"   type=\"button\">Network</button></td></tr></table></fieldset>";
+  content += "<fieldset style=\"width:15%; border-radius:15px\"> <legend>Mount parameters:</legend>";
+  content += "<table style='width:200px'><tr><th></th><th>Azimuth</th><th>Altitude</th></tr>";
+  content += "<tr><td>Counter</td><td> <input type='number' name='MAXCOUNTER' class=\"text_red\" value='"+ String(telescope->azmotor->maxcounter) + "'></td>";
+  content += "<td> <input type='number' name='MAXCOUNTER_ALT'  class=\"text_red\" value='"+ String(telescope->altmotor->maxcounter) + "'></td></tr></table><br>";
   content += "<table style='width:200px'><tr><th>Rate X</th><th>RA/AZ</th><th>Dec/Alt</th></tr>";
-  content += "<tr><td>Guide</td><td><input type='number' step='0.01' name='GUIDE'" + String(N_STYLE) + String(telescope->rate[0][0]) + "'></td>";
-  content += "<td><input type='number' step='0.01' name='GUIDEA'" + String(N_STYLE) + String(telescope->rate[0][1]) + "'></td></tr>";
+  content += "<tr><td>Guide</td><td><input type='number' step='0.01' name='GUIDE' class=\"text_red\" value='" + String(telescope->rate[0][0]) + "'></td>";
+  content += "<td><input type='number' step='0.01' name='GUIDEA' class=\"text_red\" value='" + String(telescope->rate[0][1]) + "'></td></tr>";
 
-  content += "<tr><td>Center</td><td><input type='number' step='0.01' name='CENTER'" + String(N_STYLE) + String(telescope->rate[1][0]) + "'></td>";
-  content += "<td><input type='number' step='0.01' name='CENTERA'" + String(N_STYLE) + String(telescope->rate[1][1]) + "'></td></tr>";
+  content += "<tr><td>Center</td><td><input type='number' step='0.01' name='CENTER' class=\"text_red\" value='" + String(telescope->rate[1][0]) + "'></td>";
+  content += "<td><input type='number' step='0.01' name='CENTERA'  class=\"text_red\" value='" + String(telescope->rate[1][1]) + "'></td></tr>";
 
-  content += "<tr><td>Find</td><td><input type='number' step='0.01' name='FIND'" + String(N_STYLE) + String(telescope->rate[2][0]) + "'></td>";
-  content += "<td><input type='number' step='0.01' name='FINDA' style='text-align: right;height:20px; width:60px' value ='" + String(telescope->rate[2][1]) + "'></td></tr>";
+  content += "<tr><td>Find</td><td><input type='number' step='0.01' name='FIND' class=\"text_red\" value='" + String(telescope->rate[2][0]) + "'></td>";
+  content += "<td><input type='number' step='0.01' name='FINDA' class=\"text_red\" value='"+ String(telescope->rate[2][1]) + "'></td></tr>";
 
-  content += "<tr><td>Slew</td><td><input type='number' step='0.01' name='SLEW'" + String(N_STYLE) + String(telescope->rate[3][0]) + "'></td>";
-  content += "<td><input type='number' step='0.01' name='SLEWA'" + String(N_STYLE) + String(telescope->rate[3][1]) + "'></td></tr>";
+  content += "<tr><td>Slew</td><td><input type='number' step='0.01' name='SLEW' class=\"text_red\" value='" + String(telescope->rate[3][0]) + "'></td>";
+  content += "<td><input type='number' step='0.01' name='SLEWA' class=\"text_red\" value='" + String(telescope->rate[3][1]) + "'></td></tr>";
 
-  content += "<tr><td>Prescaler</td><td><input type='number' name='PRESCALER' style='text-align: right;height:20px; width:50px' value ='" + String(telescope->prescaler) + "' uSec</td></tr></table></fieldset>";
-  content += "<fieldset style=\"width:15%\"> <legend>Focuser</legend>";
+  content += "<tr><td>Prescaler</td><td><input type='number' name='PRESCALER' class=\"text_red\" value='" + String(telescope->prescaler) + "' uSec</td></tr>";
+  content += "<tr><td>Ramp</td><td><input type='number' step='0.01' name='RAMP' class=\"text_red\" value='" + String(telescope->azmotor->acceleration / SEC_TO_RAD) + "'></td>";
+  content += "<td><input type='number' step='0.01' name='RAMPA' class=\"text_red\" value='" + String(telescope->altmotor->acceleration / SEC_TO_RAD) + "'></td></tr></table>";
+  content += "<button onclick=\"location.href='/park'\" class=\"button_red\" type=\"button\">Park telescope</button>";
+  content += "<button onclick=\"location.href='/home'\" class=\"button_red\" type=\"button\">Reset home</button><br>";
+  content += "<button onclick=\"location.href='/Align'\"class=\"button_red\" type=\"button\">2-3 stars Alignment menu</button>";
+  content += "<input type='submit' name='SUBMIT' class=\"button_red\" value='Save'></fieldset>";
+  
+  content += "<fieldset style=\"width:15% ; border-radius:15px;\"> <legend>Focuser</legend>";
   content += "<table style='width:200px'>";
-  content += "<tr><td>Focus Max:</td><td><input type='number'step='1' name='FOCUSMAX' style='text-align: right;height:20px; width:70px' value ='" + String(focusmax) + "'></td></tr>";
-  content += "<tr><td>Low Speed:</td><td><input type='number'step='1' name='FOCUSPEEDLOW' style='text-align: right;height:20px; width:70px' value ='" + String(focuspeed_low) + "'></td></tr>";
-  content += "<tr><td>Speed</td><td><input type='number'step='1' name='FOCUSPEED' style='text-align: right;height:20px; width:70px' value ='" + String(focuspeed) + "'></td></tr></table></fieldset>";
-  content += "<fieldset style=\"width:15%\"> <legend>Geodata</legend>";
+  content += "<tr><td>Focus Max:</td><td><input type='number'step='1' name='FOCUSMAX' class=\"text_red\" value='" + String(focusmax) + "'></td></tr>";
+  content += "<tr><td>Low Speed:</td><td><input type='number'step='1' name='FOCUSPEEDLOW' class=\"text_red\" value='"+ String(focuspeed_low) + "'></td></tr>";
+  content += "<tr><td>Speed</td><td><input type='number'step='1' name='FOCUSPEED' class=\"text_red\" value='" + String(focuspeed) + "'></td></tr></table></fieldset>";
+  content += "<fieldset style=\"width:15% ; border-radius:15px\"> <legend>Geodata</legend>";
   content += "<table style='width:200px'>";
-  content += "<tr><td>Longitude:</td><td><input type='number' step='any' id=\"lon\" name='LONGITUDE' style='text-align: right;height:20px; width:80px' value ='" +
+  content += "<tr><td>Longitude:</td><td><input type='number' step='any' id=\"lon\" name='LONGITUDE' class=\"text_red\" value='" +
              String(int(telescope->longitude)) + "." + String(getDecimal(telescope->longitude)) + "'></td></tr>";
-  content += "<tr><td>Latitude:</td><td><input type='number'step='any' id=\"lat\" name='LATITUDE' style='text-align: right;height:20px; width:80px' value ='" + // String(telescope->lat) +"'><br>";
+  content += "<tr><td>Latitude:</td><td><input type='number'step='any' id=\"lat\" name='LATITUDE' class=\"text_red\" value='"+ // String(telescope->lat) +"'><br>";
              String(int(telescope->lat)) + "." + String(getDecimal(telescope->lat)) + "'></td></tr>";
   //  content+= "<button onclick=\"getLocation()\">Try It</button><br>";
-  content += "<tr><td>GMT offset:</td><td><input type='number'step='1' name='TIMEZONE' style='text-align: right;height:20px; width:30px' value ='" + String(telescope->time_zone) + "'></td></tr></table>";
-  content += "<input type='submit' name='SUBMIT' value='Submit'></fieldset></form>"+msg+"<br>";
-  
-  content += "<button onclick=\"location.href='/time'\"  type=\"button\">Sync Date/Time</button>";
-  content += "<button onclick=\"location.href='/park'\"  type=\"button\">Park telescope</button>";
-  content += "<button onclick=\"location.href='/restart'\"  type=\"button\">Restart device</button><br>";
-  content += " </body></html>";
+  content += "<tr><td>GMT offset:</td><td><input type='number'step='1' name='TIMEZONE' class=\"text_red\" value='" + String(telescope->time_zone) + "'></td></tr></table>";
+   content += "<button onclick=\"location.href='/time'\" class=\"button_red\" type=\"button\">Sync Date/Time</button></fieldset>";
+  content += "</form>";
+  content += "<button onclick=\"location.href='/restart'\"class=\"button_red\"  type=\"button\">Restart device</button>";
+   content += "<button onclick=\"location.href='/update'\" class=\"button_red\" type=\"button\">Update Firmware</button>";
+  content +="<br>" + msg + " </body></html>";
   serverweb.send(200, "text/html", content);
 
 
@@ -145,7 +159,8 @@ void handleConfig()
 }
 
 void handlePark(void)
-{ time_t now;
+{
+  time_t now;
   now = time(nullptr);
   mount_park(telescope);
   String content =  "<html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
@@ -160,10 +175,29 @@ void handlePark(void)
   content += "</body></html>";
   serverweb.send(200, "text/html", content);
 }
+void handleHome(void)
+{
+  time_t now;
+  now = time(nullptr);
+  mount_home_set(telescope);
+  String content =  "<html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
+  content += "Mount parked  ,position saved on EEPROM.<br>";
+  content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
+  content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
+  content += "Alt res:" + String(RAD_TO_ARCS * telescope->altmotor->resolution) + "<br>";
+  content += "Az res:" + String(RAD_TO_ARCS *  telescope->azmotor->resolution) + "<br>";
+  content += "Sideral:" + String(sidereal_timeGMT (telescope->longitude, telescope->time_zone)) + "<br>";
+  content += "Time :" + String(ctime(&now)) + "<br>";
+  content += "<button onclick=\"location.href='/'\"  type=\"button\">Back</button><br>";
+  content += "</body></html>";
+  serverweb.send(200, "text/html", content);
+}
 void handleSync(void)
-{ String msg;
+{
+  String msg;
   time_t rtc;
-  if (serverweb.hasArg("GMT")) {
+  if (serverweb.hasArg("GMT"))
+  {
     msg = serverweb.arg("GMT");
     rtc = (msg.toInt());
     msg = serverweb.arg("OFFSET");
@@ -178,12 +212,14 @@ void handleSync(void)
   String content =  "<!DOCTYPE html><html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Sync </h2><br>";
   content += "<p id=\"fecha\">" + msg + " " + String(ctime(&rtc)) + "</p>";
   content += "<p id=\"fecha\">" + String(rtc) + "</p>";
+  content += "<button onclick=\"location.href='/'\"  type=\"button\">Back</button><br>";
   content += "</body></html>";
   serverweb.send(200, "text/html", content);
 
 }
 void handleTime(void)
-{ time_t now;
+{
+  time_t now;
   now = time(nullptr);
   String content =  "<!DOCTYPE html><html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Time </h2><br>";
   content += "<form id=\"frm1\" action=\"/sync\">";
@@ -203,7 +239,8 @@ void handleTime(void)
 
 }
 void handleRestart(void)
-{ mount_park(telescope);
+{
+  mount_park(telescope);
   String content =   "<html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ restarted</h2><br>";
   content += "Mount parked  ,position saved on EEPROM.<br>";
   content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
@@ -213,6 +250,71 @@ void handleRestart(void)
   delay(1000);
   ESP.restart();
 }
+void handleStar( void)
+{ String msg, txt;
+  if (serverweb.hasArg("Mode")) {
+    msg = serverweb.arg("Mode");
+    telescope->smode = msg.toInt();
+  }
+  switch (telescope->smode) {
+    case 0: txt = "Normal Sync"; break;
+    case 1: txt = "Set Star1"; break;
+    case 2: txt = "Set Star2"; break;
+  }
+
+  String content =   "<html><style>"+String(BUTT)+String(TEXTT)+"</style><body  bgcolor=\"#000000\" text=\"#FF4500\"><h2>Sync mode</h2><br>";
+  content += "Last selected star " + String(align_star_index) + "<br>";
+  content += "Sync mode set to:" + txt + "<br><br>";
+   content += "<fieldset style=\"width:15% ; border-radius:15px\"> <legend>Data</legend>";
+  content += "<button onclick=\"location.href='/Align?Mode=1'\"   class=\"button_red\" type=\"button\">Star1 Select</button>";
+  content += "<br>RA: " + String(st_1.ra * RAD_TO_DEG / 15.0) + "  Dec: " + String(st_1.dec * RAD_TO_DEG) + "<br>";
+  content += "Az:  " + String(st_1.az * RAD_TO_DEG) + " Alt: " + String(st_1.alt * RAD_TO_DEG) + "<br>";
+  content += "Time " + String(st_1.timer_count) + "<br><br>";
+  content += "<button onclick=\"location.href='/Align?Mode=2'\"  class=\"button_red\" type=\"button\">Star2 Select</button>";
+  content += "<br>RA:" + String(st_2.ra * RAD_TO_DEG / 15.0) + "  Dec:" + String(st_2.dec * RAD_TO_DEG) + "<br>";
+  content += "Alt " + String(st_2.az * RAD_TO_DEG) + " Alt:" + String(st_2.alt * RAD_TO_DEG) + "<br>";
+  content += "Time: " + String(st_2.timer_count) + "</fieldset><br>";
+  content += "<button onclick=\"location.href='/Align?Mode=0'\"  class=\"button_red\" type=\"button\">Sync mode</button><br>";
+  content += "<button onclick=\"location.href='/time'\"  class=\"button_red\" type=\"button\">Update Date/Time</button><br>";
+  content += "<button onclick=\"location.href='/'\"  class=\"button_red\" type=\"button\">Back</button><br>";
+  content += "</body></html>";
+  serverweb.send(200, "text/html", content);
+
+}
+void handleNetwork( void) {
+  String msg, ip, mask, gate, dns;
+  if (serverweb.hasArg("IP") && serverweb.hasArg("MASK") && serverweb.hasArg("GATEWAY") && serverweb.hasArg("DNS"))
+  {
+    String net = serverweb.arg("IP") + "\n" + serverweb.arg("MASK") + "\n" + serverweb.arg("GATEWAY") + "\n" + serverweb.arg("DNS") + "\n";
+    File f = SPIFFS.open("/network.config", "w");
+    if (!f)
+    {
+      net = ("file open failed");
+    }
+    else
+      f.println(net);
+    f.close ();
+    msg = serverweb.arg("IP");
+    msg += "\n" + serverweb.arg("MASK");
+    msg += "\n" + serverweb.arg("GATEWAY");
+    msg += "\n" + serverweb.arg("DNS") + "\n";;
+  }
+  String content = "<html><style>"+String(BUTT)+String(TEXTT)+"</style><body  bgcolor=\"#000000\" text=\"#FF6000\"><form action='/network' method='POST'><h2>Network Config</h2>";
+  content += "<fieldset style=\"width:15%;border-radius:15px\"><legend>Network</legend><table style='width:200px'>";
+  content += "<tr><td>IP</td><td><input type='text' name='IP' class=\"text_red\" value='" + WiFi.localIP().toString() + "'></td></td>";
+  content += "<td><td>MASK</td><td><input type='test' name='MASK'class=\"text_red\"  value='" + WiFi.subnetMask().toString() + "'></td></tr>";
+  content += "<tr><td>Gateway</td><td><input type='text' name='GATEWAY' class=\"text_red\" value='" + WiFi.gatewayIP().toString() + "'></td></td>";
+  content += "<td><td>DNS</td><td><input type='test' name='DNS' class=\"text_red\"  value='" + WiFi.gatewayIP().toString() + "'></td></tr></table>";
+  content += "<input type='submit' name='SUBMIT'  class=\"button_red\" value='Save'></fieldset></form>" + msg + "<br>";
+  content += "<button onclick=\"location.href='/'\"class=\"button_red\" type=\"button\">Back</button><br>";
+  content += "You must restart de ice for network changes to take effect";
+  content += "</body></html>";
+
+  serverweb.send(200, "text/html", content);
+
+}
+
+
 bool handleFileRead(String path)
 {
 
@@ -230,6 +332,7 @@ bool handleFileRead(String path)
   }
   return false;
 }
+
 void initwebserver(void)
 {
   serverweb.on("/config", handleConfig);
@@ -238,13 +341,14 @@ void initwebserver(void)
   serverweb.on("/time", handleTime);
   serverweb.on("/sync", handleSync);
   serverweb.on("/restart", handleRestart);
-//  serverweb.on("/focus", handleFocus);
-  
-  // serverweb.on("/formatfilesystem",handleFormat)
+  serverweb.on("/Align", handleStar);
+  serverweb.on("/home", handleHome);
+  serverweb.on("/network", handleNetwork);
   serverweb.onNotFound([]()
   {
     if (!handleFileRead(serverweb.uri()))
       serverweb.send(404, "text/plain", "FileNotFound");
   });
+
   serverweb.begin();
 }

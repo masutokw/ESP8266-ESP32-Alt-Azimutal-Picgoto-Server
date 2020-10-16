@@ -12,7 +12,7 @@ x;              //actual
 
 
 static VECT3 vector ;
-static char align_star_index;
+int align_star_index;
 static c_double z1, z2, z3; //Kalman Coeffs
 static char perfect_mount;
 
@@ -111,6 +111,7 @@ void third_star(void)
     x[1][2] = x[2][0] * x[0][1] - x[0][0] * x[2][1];
     x[2][2] = x[0][0] * x[1][1] - x[1][0] * x[0][1];
     vect_mod = sqrt(x[0][2] * x[0][2] + x[1][2] * x[1][2] + x[2][2] * x[2][2]);
+
     for (i = 0; i <= 2; i++)
         x[i][2] /= vect_mod;
     y[0][2] = y[1][0] * y[2][1] - y[2][0] * y[1][1];
@@ -121,13 +122,20 @@ void third_star(void)
     for (i = 0; i <= 2; i++)
         y[i][2] /= vect_mod;
 }
-void compute_trasform(void)
+void compute_trasform(c_star *star1,c_star *star2)
 
 {
     MAT3x3 aux;
     c_double  e, w;
     unsigned char i, j, m, n, k;
 
+    memset(x, 0, sizeof(x)); //clear matrix arrays
+    memset(y, 0, sizeof(y));
+    memset(eq_trans_mat, 0, sizeof(eq_trans_mat));
+    memset(altz_trans_mat, 0, sizeof(altz_trans_mat));
+
+    init_star(1,star1);
+    init_star(2,star2);
     if (align_star_index ==2)
         third_star();
 
@@ -253,4 +261,3 @@ void printm(void)
     print_matrix(&x,"x");
     print_matrix(&y,"y");
 }
-
