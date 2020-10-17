@@ -39,6 +39,7 @@ const char* password = "Mypassword";
 extern volatile int state;
 WiFiServer server(10001);
 WiFiClient serverClients[MAX_SRV_CLIENTS];
+//IPAddress serv(192, 168, 4, 1);
 ESP8266WebServer serverweb(80);
 ESP8266HTTPUpdateServer httpUpdater;
 char buff[50] = "Waiting for connection..";
@@ -120,7 +121,8 @@ void setup()
   oled_initscr();
 #endif
 
-  WiFi.mode(WIFI_AP_STA);
+ 
+ WiFi.mode(WIFI_AP_STA);
   WiFi.softAP("ESP-PGT", "boquerones");
   SPIFFS.begin();
   File f = SPIFFS.open("/wifi.config", "r");
@@ -138,8 +140,9 @@ void setup()
 
     WiFi.begin((const char*)ss, (const char*)pw);
   }
-  else  WiFi.begin(ssid, password);
-
+  else {SPIFFS.format(); 
+  WiFi.begin(ssid, password);
+  }
   f = SPIFFS.open("/network.config", "r");
   if (f)
   { IPAddress ip;
@@ -181,7 +184,7 @@ void setup()
   server.begin();
   server.setNoDelay(true);
   telescope = create_mount();
-  readconfig(telescope);
+readconfig(telescope);
   httpUpdater.setup(&serverweb);
 
   config_NTP(telescope->time_zone, 0);
@@ -193,8 +196,9 @@ void setup()
       now = time(nullptr);
     }
     init_time = time(nullptr);
-    initwebserver();
+   
   }
+  initwebserver();
   tak_init(telescope);
   speed_control_tckr.attach_ms(SPEED_CONTROL_TICKER, thread_motor2, telescope);
   counters_poll_tkr.attach_ms(COUNTERS_POLL_TICKER, track, telescope);
