@@ -1,7 +1,6 @@
 #include "misc.h"
 #include "time.h"
-#include "sntp.h"
-#include <TZ.h>
+//#include <TZ.h>
 double sdt;
 long sdt_millis;
 //input deg ,output hour
@@ -127,23 +126,23 @@ void lxprintlong1(char *message,double ang)
   int sec = temp % 60;
   sprintf(message, "%c%03d%c%02d#", c, gra, 225,min);
 }
-
 void config_NTP(int zone, int dls)
-{ char tx[10];
- int x=zone;
+{ 
+#ifdef esp8266
+  char tx[10];
+  int x = zone;
   char c = '-';
- //configTime(zone * 3600, dls * 3600 , " 193.145.15.15", "0.es.pool.ntp.org", "cuco.rediris.es");
- //configTime(TZ_Europe_Madrid, "pool.ntp.org");
- //configTime(PSTR("GMT-2"), "0.es.pool.ntp.org");
-   if (x < 0)
+ // configTime(TZ_Europe_Madrid, "pool.ntp.org");
+  if (x < 0)
   {
     x = -x;
     c = '+';
   }
- sprintf(tx,"GMT%c%x",c,x);
- 
- configTime(tx, "pool.ntp.org");
-
+  sprintf(tx, "GMT%c%x", c, x);
+   configTime(tx, "pool.ntp.org");
+#else
+    configTime(zone * 3600, dls * 3600 , " 193.145.15.15", "0.es.pool.ntp.org", "cuco.rediris.es");
+#endif
 }
 double sidereal_timeGMT_alt(double longitude)
 {

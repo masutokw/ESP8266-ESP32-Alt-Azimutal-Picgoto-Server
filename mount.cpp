@@ -229,7 +229,8 @@ int readconfig(mount_t *mt)
     int maxcounter, maxcounteralt ;
     double tmp;
     File f = SPIFFS.open("/mount.config", "r");
-    if (!f) return -1;
+    if (!f) {init_motor( mt->azmotor, AZ_ID, AZ_RED, SID_RATE * SEC_TO_RAD, mt->prescaler, mt->maxspeed[0],0);
+      init_motor( mt->altmotor,  ALT_ID,ALT_RED, 0, mt->prescaler, mt->maxspeed[1],0);return -1;}
     String s = f.readStringUntil('\n');
     maxcounter = s.toInt();
     s = f.readStringUntil('\n');
@@ -418,4 +419,3 @@ void align_sync_all(mount_t *mt,long ra,long dec)
     }
 
 };
-

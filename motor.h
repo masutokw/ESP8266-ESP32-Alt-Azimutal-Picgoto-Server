@@ -1,7 +1,7 @@
 #ifndef MOTOR_H_INCLUDED
 #define MOTOR_H_INCLUDED
 #include "piclevel.h"
-#include <ESP8266WiFi.h>
+#include "conf.h"
 #include <math.h>
 #define TIM_TICK 4e-7
 #define SEC_TO_RAD (M_PI/(3600.0*180.0))

@@ -1,4 +1,3 @@
-#include <ESP8266WebServer.h>
 #include "time.h"
 #include "taki.h"
 #include "webserver.h"
@@ -101,8 +100,8 @@ void handleConfig()
   //  Jsc+="} else {x.innerHTML = \"Geolocation not\";}}";
   //  Jsc+=" function showPosition(position) {document.getElementById('lon').value =  position.coords.longitude;document.getElementById('lat').value =  position.coords.latitude;}</script>";
 
-  String content = "<html><style>"+String(BUTT)+String(TEXTT)+"</style>";
-  content+="<body  bgcolor=\"#000000\" text=\"#FF4500\"><form action='/config' method='POST'><h2>ESP-PGT++ AltAz Config</h2>";
+  String content = "<html><style>"+String(BUTT)+String(TEXTT)+"</style>"+String(AUTO_SIZE);
+  content+="<body  bgcolor=\"#000000\" text=\"#FF4500\"><form action='/config' method='POST'><h2>ESP-PGT++ AltAz Config1,2</h2>";
   // content+=Jsc;
   content += "<fieldset style=\"width:15% ; border-radius:15px\"> <legend>Login  information:</legend>";
   content += "<table style='width:200px'>";
@@ -163,7 +162,7 @@ void handlePark(void)
   time_t now;
   now = time(nullptr);
   mount_park(telescope);
-  String content =  "<html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
+  String content =  "<html>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
   content += "Mount parked  ,position saved on EEPROM.<br>";
   content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
   content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
@@ -180,7 +179,7 @@ void handleHome(void)
   time_t now;
   now = time(nullptr);
   mount_home_set(telescope);
-  String content =  "<html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
+  String content =  "<html>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
   content += "Mount parked  ,position saved on EEPROM.<br>";
   content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
   content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
@@ -209,7 +208,7 @@ void handleSync(void)
     tak_init(telescope);
     telescope->is_tracking = TRUE;
   }
-  String content =  "<!DOCTYPE html><html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Sync </h2><br>";
+  String content =  "<!DOCTYPE html><html>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Sync </h2><br>";
   content += "<p id=\"fecha\">" + msg + " " + String(ctime(&rtc)) + "</p>";
   content += "<p id=\"fecha\">" + String(rtc) + "</p>";
   content += "<button onclick=\"location.href='/'\"  type=\"button\">Back</button><br>";
@@ -221,7 +220,7 @@ void handleTime(void)
 {
   time_t now;
   now = time(nullptr);
-  String content =  "<!DOCTYPE html><html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Time </h2><br>";
+  String content =  "<!DOCTYPE html><html>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Time </h2><br>";
   content += "<form id=\"frm1\" action=\"/sync\">";
   content += "<button onclick=\"myFunction()\">Synchronize now!</button>";
   content += "<input type=\"number\" name=\"GMT\" id=\"gmt\"  type=\"hidden\"><br><br>";
@@ -241,7 +240,7 @@ void handleTime(void)
 void handleRestart(void)
 {
   mount_park(telescope);
-  String content =   "<html><body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ restarted</h2><br>";
+  String content =   "<html>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ restarted</h2><br>";
   content += "Mount parked  ,position saved on EEPROM.<br>";
   content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
   content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
@@ -262,7 +261,7 @@ void handleStar( void)
     case 2: txt = "Set Star2"; break;
   }
 
-  String content =   "<html><style>"+String(BUTT)+String(TEXTT)+"</style><body  bgcolor=\"#000000\" text=\"#FF4500\"><h2>Sync mode</h2><br>";
+  String content =   "<html><style>"+String(BUTT)+String(TEXTT)+"</style>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FF4500\"><h2>Sync mode</h2><br>";
   content += "Last selected star " + String(align_star_index) + "<br>";
   content += "Sync mode set to:" + txt + "<br><br>";
    content += "<fieldset style=\"width:15% ; border-radius:15px\"> <legend>Data</legend>";
@@ -299,7 +298,7 @@ void handleNetwork( void) {
     msg += "\n" + serverweb.arg("GATEWAY");
     msg += "\n" + serverweb.arg("DNS") + "\n";;
   }
-  String content = "<html><style>"+String(BUTT)+String(TEXTT)+"</style><body  bgcolor=\"#000000\" text=\"#FF6000\"><form action='/network' method='POST'><h2>Network Config</h2>";
+  String content = "<html><style>"+String(BUTT)+String(TEXTT)+"</style>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FF6000\"><form action='/network' method='POST'><h2>Network Config</h2>";
   content += "<fieldset style=\"width:15%;border-radius:15px\"><legend>Network</legend><table style='width:200px'>";
   content += "<tr><td>IP</td><td><input type='text' name='IP' class=\"text_red\" value='" + WiFi.localIP().toString() + "'></td></td>";
   content += "<td><td>MASK</td><td><input type='test' name='MASK'class=\"text_red\"  value='" + WiFi.subnetMask().toString() + "'></td></tr>";
