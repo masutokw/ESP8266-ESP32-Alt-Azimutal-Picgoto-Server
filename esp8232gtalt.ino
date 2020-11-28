@@ -220,7 +220,7 @@ void setup()
   InitOTA();
 #endif
 #ifdef IR_CONTROL
-ir_init();
+  ir_init();
 #endif
 }
 
@@ -228,7 +228,7 @@ void loop()
 {
   delay(10);
   net_task();
-  #ifndef esp8266
+#ifndef esp8266
   bttask();
 #endif
   now = time(nullptr);
