@@ -43,6 +43,20 @@
 #define FIND 25
 #define SLEW 22
 #endif
+#if REMOTE_T ==4
+#define EAST 91
+#define WEST 88
+#define NORTH 94
+#define SOUTH 86
+#define OK  90
+#define FOCUS_F 18
+#define FOCUS_B 2
+#define GUIDE 13
+#define CENTER 75
+#define FIND 74
+#define SLEW 79
+#endif
+
 void ir_init(void);
 void ir_read(void);
 #endif
