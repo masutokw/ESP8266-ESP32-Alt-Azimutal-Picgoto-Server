@@ -31,4 +31,5 @@ void  speed_up_down(motor_t* mt);
 void  setcounter(motor_t* mt, int count);
 void  loadconf(motor_t* mt, char* name);
 void  savemotorcounter(motor_t* mt);
+void setbackslash(motor_t* mt,int back);
 #endif

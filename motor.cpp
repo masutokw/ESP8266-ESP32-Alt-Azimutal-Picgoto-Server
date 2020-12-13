@@ -26,6 +26,7 @@ void init_motor(motor_t* mt, char ref, int maxcounter, double spd, double tick, 
   mt->slewing = 0;
   mt->maxspeed = maxspd;
   set_motor_max_counter(ref, maxcounter);
+  setbackslash(mt,0);
 }
 
 void setspeed(motor_t* mt , double tspeed)
@@ -141,4 +142,9 @@ void settargetspeed(motor_t* mt, double tspeed)
 {
   if (fabs(tspeed) <= mt->maxspeed) mt->targetspeed = tspeed;
   else mt->targetspeed = mt->maxspeed * sign (tspeed);
+}
+
+void setbackslash(motor_t* mt,int back)
+{
+setmotorbackslash(mt->id, back);
 }

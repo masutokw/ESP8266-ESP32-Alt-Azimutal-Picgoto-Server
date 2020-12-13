@@ -58,4 +58,5 @@ void mount_home_set(mount_t *mt);
 void  tak_init(mount_t *mt);
 void track(mount_t *mt1);
 void align_sync_all(mount_t *mt,long ra,long dec);
+void mount_track_off(mount_t *mt);
 #endif

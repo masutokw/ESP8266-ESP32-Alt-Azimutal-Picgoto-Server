@@ -17,7 +17,7 @@
 #define RAD_TO_DEG 180.0/M_PI
 #define K_SID 1.00273790935
 #define SEC_TO_RAD (M_PI/(3600.0*180.0))
-
+#define JD2000          2451545.0
 typedef struct timespec wallclock_t;
 double sidereal_timeGMT_alt(double longitudez);
 double sidereal_timeGMT (double longitude,int t);
@@ -29,4 +29,6 @@ void lxprintaz1(char *message,double ang);
 void lxprintlong1(char *message,double ang);
 void lxprintlat1(char *message,double ang);
 void config_NTP(int zone,int dls );
+void ln_get_equ_prec (double mean_ra,double mean_dec, double JD,double  *position_ra,double  *position_dec);
+
 #endif

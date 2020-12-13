@@ -1,7 +1,7 @@
 #include "time.h"
 #include "taki.h"
 #include "webserver.h"
-extern char one;
+extern char sync_target;
 extern int  focuspeed;
 extern int  focuspeed_low;
 extern int focusmax;
@@ -204,7 +204,8 @@ void handleSync(void)
     timezone tz = {msg.toInt()  , 0 };
     settimeofday(&tv, &tz);
     rtc = time(nullptr);
-    telescope->is_tracking = one = FALSE;
+    telescope->is_tracking = FALSE;
+     sync_target =TRUE;
     tak_init(telescope);
     telescope->is_tracking = TRUE;
   }

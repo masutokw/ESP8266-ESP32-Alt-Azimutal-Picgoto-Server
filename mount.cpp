@@ -7,7 +7,7 @@ extern int  focuspeed;
 extern int  focuspeed_low;
 extern int focusmax;
 char sel_flag;
-char volatile one = FALSE;
+char volatile sync_target = TRUE;//
 mount_t* create_mount(void)
 
 {
@@ -60,11 +60,7 @@ void thread_motor(mount_t* m)
 { static  byte n;
   speed_up_down(((mount_t*)m)->altmotor);
   speed_up_down(((mount_t*)m)->azmotor);
-  if (sel_flag)
-  {
-    pollcounters( AZ_ID);
-    sel_flag = false;
-  }
+
 }
 void thread_motor2(mount_t* m)
 {
@@ -75,11 +71,11 @@ void thread_motor2(mount_t* m)
     pollcounters( AZ_ID);
     sel_flag = false;
   }
-
+  //if (Serial.available()>=18) track(m);
 }
 
 int goto_ra_dec(mount_t *mt, double ra, double dec)
-{
+{  mt->is_tracking = TRUE;
   st_target.ra = ra;
   st_target.dec = dec;
 
@@ -113,27 +109,28 @@ int mount_stop(mount_t *mt, char direction)
   {
     case 'n':
     case 's':
-      mt->altmotor->targetspeed = 0.0;
+      mt->altmotor->targetspeed = 0.00001;
       do
       {
         yield();
         delay(5);
         n++;
       }
-      while ((n < top) && (fabs(mt->altmotor->current_speed) > 0.0));
+      while ((n < top) && (fabs(mt->altmotor->current_speed) > 0.00001));
       break;
 
 
     case 'w':
     case 'e':
-      mt->azmotor->targetspeed = 0.0;
+      mt->azmotor->targetspeed = 0.00001;
       do
       {
         yield();
         delay(5);
         n++;
       }
-      while ((n < top) && (fabs(mt->azmotor->current_speed) > 0.0));
+      while ((n < top) && (fabs(mt->azmotor->current_speed) > 0.00001));
+
 
       break;
 
@@ -142,8 +139,8 @@ int mount_stop(mount_t *mt, char direction)
 
       break;
   };
-  one = FALSE;
-  mt->is_tracking = TRUE;
+  sync_target = TRUE;
+  // mt->is_tracking = TRUE;
 
 }
 
@@ -276,6 +273,13 @@ int readconfig(mount_t *mt)
 
 
 }
+void mount_track_off(mount_t *mt)
+
+{
+  mt->altmotor->slewing = mt->azmotor->slewing = mt->is_tracking = FALSE;
+  mt->altmotor->targetspeed = 0.0;
+  mt->azmotor->targetspeed = 0.0;
+}
 void mount_park(mount_t *mt)
 
 {
@@ -349,6 +353,7 @@ void  tak_init(mount_t *mt)
 void track(mount_t *mt)
 {
   double d_az_r, d_alt_r;
+
   int aval = Serial.available();
   if (aval >= 18)
   {
@@ -360,8 +365,14 @@ void track(mount_t *mt)
     st_current.alt = mt->altmotor->position;
     //compute ecuatorial current equatorial values to be send out from LX200 protocol interface
     to_equatorial(&st_current);
+    if (sync_target ) {
+      st_target.ra = mt->ra_target = st_current.ra;
+      st_target.dec = mt->dec_target = st_current.dec;
+      sync_target = FALSE;
+      mt->is_tracking=TRUE;
+    }
 
-    if (mt->is_tracking && one)
+    if (mt->is_tracking)
     {
       //compute next alt/az mount values  for target next lap second
       st_target.timer_count += 1.0;
@@ -374,17 +385,11 @@ void track(mount_t *mt)
       if (fabs(d_alt_r) > (M_PI)) d_alt_r -= M_2PI;
 
       // Compute and set timer intervals for stepper  rates
-      //speed_x_a(d_az_r);
       settargetspeed(mt->azmotor, d_az_r);
       settargetspeed(mt->altmotor, d_alt_r);
-      // is_slewing='0';
+
     }
-    else
-    {
-      st_target.ra = st_current.ra;
-      st_target.dec = st_current.dec;
-      one = TRUE;
-    }
+
   }
   while (Serial.available()) Serial.read();
   if (mt->sync) sync_ra_dec(mt);
@@ -411,7 +416,8 @@ void align_sync_all(mount_t *mt, long ra, long dec)
     case 2:
       set_star(&st_2, ra * (15.0 / 3600.0), dec / 3600.0, RAD_TO_DEG * mt->azmotor->position, RAD_TO_DEG * mt->altmotor->position,  ((millis() - sdt_millis) / 1000.0));
       // init_star(2, &st_2);
-      mt->is_tracking = one = FALSE;
+      mt->is_tracking =FALSE;
+      sync_target = TRUE;
       compute_trasform(&st_1, &st_2);
       mt->is_tracking = TRUE;
 
