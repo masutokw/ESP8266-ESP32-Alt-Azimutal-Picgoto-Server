@@ -91,8 +91,8 @@ void handleConfig()
       f.close ();
       readconfig(telescope);
       now = time(nullptr);
-      msg = " Config Saved at " + String(ctime(&init_time));
-      msg += "  " + String(ctime(&now));
+      msg = " Config Saved at " + String(ctime(&now));
+     // msg += "  " + String(ctime(&now));
     }
     f.close ();
   }
@@ -193,16 +193,16 @@ void handleHome(void)
 }
 void handleSync(void)
 {
-  String msg;
+  String msg,msg1;
   time_t rtc;
   if (serverweb.hasArg("GMT"))
-  {
+  { msg1 = serverweb.arg("OFFSET");
     msg = serverweb.arg("GMT");
-    rtc = (msg.toInt());
-    msg = serverweb.arg("OFFSET");
+    rtc = msg.toInt();
+    //msg = serverweb.arg("OFFSET");
     timeval tv = { rtc, 0 };
-    timezone tz = {msg.toInt()  , 0 };
-    settimeofday(&tv, &tz);
+    //timezone tz = {msg.toInt()  ,0 };
+    settimeofday(&tv, nullptr);
     rtc = time(nullptr);
     telescope->is_tracking = FALSE;
      sync_target =TRUE;

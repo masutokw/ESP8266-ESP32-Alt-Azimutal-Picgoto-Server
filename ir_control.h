@@ -1,7 +1,7 @@
 #include "conf.h"
 #ifndef IR_CONTROL_H_INCLUDED
 #define IR_CONTROL_H_INCLUDED
-#define REMOTE_T 1
+#define REMOTE_T 4
 #if REMOTE_T ==1
 #define EAST 0x16
 #define WEST  0x14

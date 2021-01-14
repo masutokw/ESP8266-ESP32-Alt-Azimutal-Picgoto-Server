@@ -1,6 +1,6 @@
 #include "misc.h"
 #include "time.h"
-//#include <TZ.h>
+#include <TZ.h>
 double sdt;
 long sdt_millis;
 //input deg ,output hour
@@ -152,7 +152,9 @@ void config_NTP(int zone, int dls)
     c = '+';
   }
   sprintf(tx, "GMT%c%x", c, x);
-   configTime(tx, "pool.ntp.org");
+  configTime(tx, "pool.ntp.org");
+   setenv ("TZ", tx, 1);
+   tzset (); 
 #else
     configTime(zone * 3600, dls * 3600 , " 193.145.15.15", "0.es.pool.ntp.org", "cuco.rediris.es");
 #endif
