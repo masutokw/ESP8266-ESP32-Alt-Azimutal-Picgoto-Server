@@ -1,3 +1,5 @@
+#include "conf.h"
+#ifdef OLED_DISPLAY
 #include "oled.h"
 extern mount_t *telescope;
 //SSD1306 display(0x3c, D5, D6);
@@ -49,3 +51,4 @@ void oled_waitscr(void)
   display.drawString(0, 26, "Waiting for Client");
   display.display();
 }
+#endif

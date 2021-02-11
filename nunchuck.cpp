@@ -1,3 +1,5 @@
+#include "conf.h"
+#ifdef NUNCHUCK_CONTROL
 #include <Arduino.h>
 #include <Wire.h>
 #include "mount.h"
@@ -115,3 +117,4 @@ void nunchuck_read(void)
 
     delay(1);
 }
+#endif

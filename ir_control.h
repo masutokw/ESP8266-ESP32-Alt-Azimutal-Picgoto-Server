@@ -1,7 +1,8 @@
 #include "conf.h"
+#ifdef IR_CONTROL
 #ifndef IR_CONTROL_H_INCLUDED
 #define IR_CONTROL_H_INCLUDED
-#define REMOTE_T 4
+#define REMOTE_T 0
 #if REMOTE_T ==1
 #define EAST 0x16
 #define WEST  0x14
@@ -48,6 +49,26 @@
 #define CENTER 70
 #define FIND 71
 #define SLEW 68
+#define N_EAST 100
+#define N_WEST 101
+#define S_EAST 102
+#define S_WEST 103
+#define TRACK 104
+#define TRACK_OFF 105
+#define B_1 106
+#define B_2 107
+#define B_3 108
+#define B_4 109
+#define B_5 110
+#define B_6 111
+#define B_7 112
+#define B_8 113
+#define B_9 114
+#define B_0 115
+#define GO_TO 116
+#define CLEAR 117
+#define FLIP_W 118
+#define FLIP_E 119
 #endif
 
 #if REMOTE_T ==3
@@ -128,6 +149,40 @@
 #define CLEAR 29
 #define FLIP_W 25
 #define FLIP_E 89
+#endif
+
+#if REMOTE_T == 0
+#define EAST 0
+#define WEST 1
+#define NORTH 2
+#define SOUTH 3
+#define OK  4
+#define FOCUS_F 5
+#define FOCUS_B 6
+#define GUIDE 7
+#define CENTER 8
+#define FIND 9
+#define SLEW 10
+#define N_EAST 11
+#define N_WEST 12
+#define S_EAST 13
+#define S_WEST 14
+#define TRACK 15
+#define TRACK_OFF 16
+#define B_1 17
+#define B_2 18
+#define B_3 19
+#define B_4 20
+#define B_5 21
+#define B_6 22
+#define B_7 23
+#define B_8 24
+#define B_9 25
+#define B_0 26
+#define GO_TO 27
+#define CLEAR 28
+#define FLIP_W 29
+#define FLIP_E 30
 #endif
 const double Messier[110][2] ={
 {83.6250,22.0167},
@@ -243,4 +298,6 @@ const double Messier[110][2] ={
 };
 void ir_init(void);
 void ir_read(void);
+uint32 get_IR_lcode(uint32_t bcode);
+#endif
 #endif

@@ -1,6 +1,12 @@
 #include "time.h"
 #include "taki.h"
 #include "webserver.h"
+#ifdef IR_CONTROL
+extern uint32_t truecode,lasti;
+extern byte cmd_map [];
+const String codes[31]={"EAST","WEST","NORTH","SOUTH","OK","FOCUS_F","FOCUS_B","GUIDE","CENTER","FIND","SLEW","N_EAST","N_WEST","S_EAST",
+"S_WEST","TRACK","UNTRACK","B_1","B_2","B_3","B_4","B_5","B_6","B_7","B_8","B_9","B_0","GO_TO","CLEAR","FLIP_W","FLIP_E"};
+#endif
 extern char sync_target;
 extern int  focuspeed;
 extern int  focuspeed_low;
@@ -92,7 +98,7 @@ void handleConfig()
       readconfig(telescope);
       now = time(nullptr);
       msg = " Config Saved at " + String(ctime(&now));
-     // msg += "  " + String(ctime(&now));
+      // msg += "  " + String(ctime(&now));
     }
     f.close ();
   }
@@ -100,18 +106,23 @@ void handleConfig()
   //  Jsc+="} else {x.innerHTML = \"Geolocation not\";}}";
   //  Jsc+=" function showPosition(position) {document.getElementById('lon').value =  position.coords.longitude;document.getElementById('lat').value =  position.coords.latitude;}</script>";
 
-  String content = "<html><style>"+String(BUTT)+String(TEXTT)+"</style>"+String(AUTO_SIZE);
-  content+="<body  bgcolor=\"#000000\" text=\"#FF4500\"><form action='/config' method='POST'><h2>ESP-PGT++ AltAz Config1,2</h2>";
-  // content+=Jsc;
+  String content = "<html><style>" + String(BUTT) + String(TEXTT) + "</style>" + String(AUTO_SIZE);
+   content += "<body  bgcolor=\"#000000\" text=\"#FF4500\"><form action='/config' method='POST'>";
+  #ifdef IR_CONTROL
+  content += "<h2>ESP-PGT++ AltAz IR Control</h2>";
+  #else
+  content += "<h2>ESP-PGT++ AltAz NUNCHUCK</h2>";
+  #endif
+ 
   content += "<fieldset style=\"width:15% ; border-radius:15px\"> <legend>Login  information:</legend>";
   content += "<table style='width:200px'>";
- content += "<tr><td>SSID</td><td><input type='text' name='SSID' class=\"text_red\" value='" + ssi + "'></td></tr> ";
-  content += "<tr><td>Password:</td><td><input type='password' name='PASSWORD' class=\"text_red\" value='"+ pwd + "'></td>";
+  content += "<tr><td>SSID</td><td><input type='text' name='SSID' class=\"text_red\" value='" + ssi + "'></td></tr> ";
+  content += "<tr><td>Password:</td><td><input type='password' name='PASSWORD' class=\"text_red\" value='" + pwd + "'></td>";
   content += "<td><button onclick=\"location.href='/network'\" class=\"button_red\"   type=\"button\">Network</button></td></tr></table></fieldset>";
   content += "<fieldset style=\"width:15%; border-radius:15px\"> <legend>Mount parameters:</legend>";
   content += "<table style='width:200px'><tr><th></th><th>Azimuth</th><th>Altitude</th></tr>";
-  content += "<tr><td>Counter</td><td> <input type='number' name='MAXCOUNTER' class=\"text_red\" value='"+ String(telescope->azmotor->maxcounter) + "'></td>";
-  content += "<td> <input type='number' name='MAXCOUNTER_ALT'  class=\"text_red\" value='"+ String(telescope->altmotor->maxcounter) + "'></td></tr></table><br>";
+  content += "<tr><td>Counter</td><td> <input type='number' name='MAXCOUNTER' class=\"text_red\" value='" + String(telescope->azmotor->maxcounter) + "'></td>";
+  content += "<td> <input type='number' name='MAXCOUNTER_ALT'  class=\"text_red\" value='" + String(telescope->altmotor->maxcounter) + "'></td></tr></table><br>";
   content += "<table style='width:200px'><tr><th>Rate X</th><th>RA/AZ</th><th>Dec/Alt</th></tr>";
   content += "<tr><td>Guide</td><td><input type='number' step='0.01' name='GUIDE' class=\"text_red\" value='" + String(telescope->rate[0][0]) + "'></td>";
   content += "<td><input type='number' step='0.01' name='GUIDEA' class=\"text_red\" value='" + String(telescope->rate[0][1]) + "'></td></tr>";
@@ -120,7 +131,7 @@ void handleConfig()
   content += "<td><input type='number' step='0.01' name='CENTERA'  class=\"text_red\" value='" + String(telescope->rate[1][1]) + "'></td></tr>";
 
   content += "<tr><td>Find</td><td><input type='number' step='0.01' name='FIND' class=\"text_red\" value='" + String(telescope->rate[2][0]) + "'></td>";
-  content += "<td><input type='number' step='0.01' name='FINDA' class=\"text_red\" value='"+ String(telescope->rate[2][1]) + "'></td></tr>";
+  content += "<td><input type='number' step='0.01' name='FINDA' class=\"text_red\" value='" + String(telescope->rate[2][1]) + "'></td></tr>";
 
   content += "<tr><td>Slew</td><td><input type='number' step='0.01' name='SLEW' class=\"text_red\" value='" + String(telescope->rate[3][0]) + "'></td>";
   content += "<td><input type='number' step='0.01' name='SLEWA' class=\"text_red\" value='" + String(telescope->rate[3][1]) + "'></td></tr>";
@@ -132,25 +143,26 @@ void handleConfig()
   content += "<button onclick=\"location.href='/home'\" class=\"button_red\" type=\"button\">Reset home</button><br>";
   content += "<button onclick=\"location.href='/Align'\"class=\"button_red\" type=\"button\">2-3 stars Alignment menu</button>";
   content += "<input type='submit' name='SUBMIT' class=\"button_red\" value='Save'></fieldset>";
-  
+
   content += "<fieldset style=\"width:15% ; border-radius:15px;\"> <legend>Focuser</legend>";
   content += "<table style='width:200px'>";
   content += "<tr><td>Focus Max:</td><td><input type='number'step='1' name='FOCUSMAX' class=\"text_red\" value='" + String(focusmax) + "'></td></tr>";
-  content += "<tr><td>Low Speed:</td><td><input type='number'step='1' name='FOCUSPEEDLOW' class=\"text_red\" value='"+ String(focuspeed_low) + "'></td></tr>";
+  content += "<tr><td>Low Speed:</td><td><input type='number'step='1' name='FOCUSPEEDLOW' class=\"text_red\" value='" + String(focuspeed_low) + "'></td></tr>";
   content += "<tr><td>Speed</td><td><input type='number'step='1' name='FOCUSPEED' class=\"text_red\" value='" + String(focuspeed) + "'></td></tr></table></fieldset>";
   content += "<fieldset style=\"width:15% ; border-radius:15px\"> <legend>Geodata</legend>";
   content += "<table style='width:200px'>";
   content += "<tr><td>Longitude:</td><td><input type='number' step='any' id=\"lon\" name='LONGITUDE' class=\"text_red\" value='" +
              String(int(telescope->longitude)) + "." + String(getDecimal(telescope->longitude)) + "'></td></tr>";
-  content += "<tr><td>Latitude:</td><td><input type='number'step='any' id=\"lat\" name='LATITUDE' class=\"text_red\" value='"+ // String(telescope->lat) +"'><br>";
+  content += "<tr><td>Latitude:</td><td><input type='number'step='any' id=\"lat\" name='LATITUDE' class=\"text_red\" value='" + // String(telescope->lat) +"'><br>";
              String(int(telescope->lat)) + "." + String(getDecimal(telescope->lat)) + "'></td></tr>";
   //  content+= "<button onclick=\"getLocation()\">Try It</button><br>";
   content += "<tr><td>GMT offset:</td><td><input type='number'step='1' name='TIMEZONE' class=\"text_red\" value='" + String(telescope->time_zone) + "'></td></tr></table>";
-   content += "<button onclick=\"location.href='/time'\" class=\"button_red\" type=\"button\">Sync Date/Time</button></fieldset>";
+  content += "<button onclick=\"location.href='/time'\" class=\"button_red\" type=\"button\">Sync Date/Time</button></fieldset>";
   content += "</form>";
   content += "<button onclick=\"location.href='/restart'\"class=\"button_red\"  type=\"button\">Restart device</button>";
-   content += "<button onclick=\"location.href='/update'\" class=\"button_red\" type=\"button\">Update Firmware</button>";
-  content +="<br>" + msg + " </body></html>";
+  content += "<button onclick=\"location.href='/update'\" class=\"button_red\" type=\"button\">Update Firmware</button>";
+  content += "<button onclick=\"location.href='/remote'\" class=\"button_red\" type=\"button\">IR Remote </button>";
+  content += "<br>" + msg + " </body></html>";
   serverweb.send(200, "text/html", content);
 
 
@@ -162,7 +174,7 @@ void handlePark(void)
   time_t now;
   now = time(nullptr);
   mount_park(telescope);
-  String content =  "<html>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
+  String content =  "<html>" + String(AUTO_SIZE) + "<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
   content += "Mount parked  ,position saved on EEPROM.<br>";
   content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
   content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
@@ -179,7 +191,7 @@ void handleHome(void)
   time_t now;
   now = time(nullptr);
   mount_home_set(telescope);
-  String content =  "<html>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
+  String content =  "<html>" + String(AUTO_SIZE) + "<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ PARKED</h2><br>";
   content += "Mount parked  ,position saved on EEPROM.<br>";
   content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
   content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
@@ -193,7 +205,7 @@ void handleHome(void)
 }
 void handleSync(void)
 {
-  String msg,msg1;
+  String msg, msg1;
   time_t rtc;
   if (serverweb.hasArg("GMT"))
   { msg1 = serverweb.arg("OFFSET");
@@ -205,11 +217,11 @@ void handleSync(void)
     settimeofday(&tv, nullptr);
     rtc = time(nullptr);
     telescope->is_tracking = FALSE;
-     sync_target =TRUE;
+    sync_target = TRUE;
     tak_init(telescope);
     telescope->is_tracking = TRUE;
   }
-  String content =  "<!DOCTYPE html><html>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Sync </h2><br>";
+  String content =  "<!DOCTYPE html><html>" + String(AUTO_SIZE) + "<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Sync </h2><br>";
   content += "<p id=\"fecha\">" + msg + " " + String(ctime(&rtc)) + "</p>";
   content += "<p id=\"fecha\">" + String(rtc) + "</p>";
   content += "<button onclick=\"location.href='/'\"  type=\"button\">Back</button><br>";
@@ -221,7 +233,7 @@ void handleTime(void)
 {
   time_t now;
   now = time(nullptr);
-  String content =  "<!DOCTYPE html><html>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Time </h2><br>";
+  String content =  "<!DOCTYPE html><html>" + String(AUTO_SIZE) + "<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ Time </h2><br>";
   content += "<form id=\"frm1\" action=\"/sync\">";
   content += "<button onclick=\"myFunction()\">Synchronize now!</button>";
   content += "<input type=\"number\" name=\"GMT\" id=\"gmt\"  type=\"hidden\"><br><br>";
@@ -241,7 +253,7 @@ void handleTime(void)
 void handleRestart(void)
 {
   mount_park(telescope);
-  String content =   "<html>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ restarted</h2><br>";
+  String content =   "<html>" + String(AUTO_SIZE) + "<body  bgcolor=\"#000000\" text=\"#FFFFFF\"><h2>ESP-PGT++ restarted</h2><br>";
   content += "Mount parked  ,position saved on EEPROM.<br>";
   content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
   content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
@@ -262,10 +274,10 @@ void handleStar( void)
     case 2: txt = "Set Star2"; break;
   }
 
-  String content =   "<html><style>"+String(BUTT)+String(TEXTT)+"</style>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FF4500\"><h2>Sync mode</h2><br>";
+  String content =   "<html><style>" + String(BUTT) + String(TEXTT) + "</style>" + String(AUTO_SIZE) + "<body  bgcolor=\"#000000\" text=\"#FF4500\"><h2>Sync mode</h2><br>";
   content += "Last selected star " + String(align_star_index) + "<br>";
   content += "Sync mode set to:" + txt + "<br><br>";
-   content += "<fieldset style=\"width:15% ; border-radius:15px\"> <legend>Data</legend>";
+  content += "<fieldset style=\"width:15% ; border-radius:15px\"> <legend>Data</legend>";
   content += "<button onclick=\"location.href='/Align?Mode=1'\"   class=\"button_red\" type=\"button\">Star1 Select</button>";
   content += "<br>RA: " + String(st_1.ra * RAD_TO_DEG / 15.0) + "  Dec: " + String(st_1.dec * RAD_TO_DEG) + "<br>";
   content += "Az:  " + String(st_1.az * RAD_TO_DEG) + " Alt: " + String(st_1.alt * RAD_TO_DEG) + "<br>";
@@ -299,7 +311,7 @@ void handleNetwork( void) {
     msg += "\n" + serverweb.arg("GATEWAY");
     msg += "\n" + serverweb.arg("DNS") + "\n";;
   }
-  String content = "<html><style>"+String(BUTT)+String(TEXTT)+"</style>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FF6000\"><form action='/network' method='POST'><h2>Network Config</h2>";
+  String content = "<html><style>" + String(BUTT) + String(TEXTT) + "</style>" + String(AUTO_SIZE) + "<body  bgcolor=\"#000000\" text=\"#FF6000\"><form action='/network' method='POST'><h2>Network Config</h2>";
   content += "<fieldset style=\"width:15%;border-radius:15px\"><legend>Network</legend><table style='width:200px'>";
   content += "<tr><td>IP</td><td><input type='text' name='IP' class=\"text_red\" value='" + WiFi.localIP().toString() + "'></td></td>";
   content += "<td><td>MASK</td><td><input type='test' name='MASK'class=\"text_red\"  value='" + WiFi.subnetMask().toString() + "'></td></tr>";
@@ -332,6 +344,58 @@ bool handleFileRead(String path)
   }
   return false;
 }
+#ifdef IR_CONTROL
+void handleRemote(void)
+{ char n;
+  String code,msg;
+    if (serverweb.args()==31) {
+        File f = SPIFFS.open("/remote.config", "w");
+      for (uint8_t i = 0; i < serverweb.args(); i++) {
+    //content += " " + serverweb.argName(i) + ": " + serverweb.arg(i) + "<br>";
+    code=serverweb.arg(i);
+    msg+=code+"\n";
+    cmd_map[i]=code.toInt();
+  }
+    f.println(msg);
+    f.close ();
+  }
+
+  //  String content =  "<html><head> <meta http-equiv='refresh' content='3'><style>" + String(BUTT) + String(TEXTT) + "</style>" + String(AUTO_SIZE) + " </head><body  bgcolor=\"#000000\" text=\"#FF6000\"><h2>info</h2><br>";
+   String content =  "<html><head> <style>" + String(BUTT) + String(TEXTT1) + "</style>" + String(AUTO_SIZE) + " </head><body  bgcolor=\"#000000\" text=\"#FF6000\"><h2>IR REMOTE</h2><br>";
+  // content += "Ir Code : " + String(truecode) + "  "+String(lasti)+"  " +codes[lasti] + "  "+String(obj)+"<br>";
+   content+="<form id=\"IR_Form\" action=\"/remote\">";
+    content += "IrCodes: <br><table style='width:200px'>";
+
+    for(n=0;n<31;n++) {
+      if (!(n%2))    
+      content += "<tr><td>"+codes[n]+"</td><td><input type='text' name='"+codes[n]+"' class=\"text_red\"  value='" +String(cmd_map[n]) + "'></td>";
+      else
+      content += "<td>"+codes[n]+"</td><td><input type='text' name='"+codes[n]+"' class=\"text_red\"  value='" +String(cmd_map[n]) + "'></td></tr>";
+      
+    }
+    content += "</td></table> <input type=\"button\"  class=\"button_red\" onclick=\"myFunction()\" value=\"Save Codes\">";
+   // content+="<br><button onclick=\"location.href='/open'\" class=\"button_red\" type=\"button\">Open</button><br>";
+    content += "<button onclick=\"location.href='/IR'\" class=\"button_red\" type=\"button\">IR</button><br>";
+    content += "<button onclick=\"location.href='/'\" class=\"button_red\" type=\"button\">Home</button><br>";
+    
+    content +="<script>function myFunction() {  document.getElementById(\"IR_Form\").submit();}</script>";
+    content += "</body></html>";
+       serverweb.send(200, "text/html", content);
+}
+
+void handleIr(void)
+{ char n;
+    
+    String content =  "<html><head> <meta http-equiv='refresh' content='3'><style>" + String(BUTT) + String(TEXTT) + "</style>" + String(AUTO_SIZE) + " </head><body  bgcolor=\"#000000\" text=\"#FF6000\"><h2>info</h2><br>";
+    content += "Ir Code : " + String(truecode)+"<br>";
+    if (lasti<31)  content += "Action : " + codes[lasti]+"<br>";
+    content += "<button onclick=\"location.href='/remote'\" class=\"button_red\" type=\"button\">Remote</button><br>";
+    content += "<button onclick=\"location.href='/'\" class=\"button_red\" type=\"button\">Back</button><br>";
+    content += "</body></html>";
+
+    serverweb.send(200, "text/html", content);
+}
+#endif
 
 void initwebserver(void)
 {
@@ -344,6 +408,10 @@ void initwebserver(void)
   serverweb.on("/Align", handleStar);
   serverweb.on("/home", handleHome);
   serverweb.on("/network", handleNetwork);
+#ifdef IR_CONTROL
+  serverweb.on("/remote", handleRemote);
+  serverweb.on("/IR", handleIr);
+#endif
   serverweb.onNotFound([]()
   {
     if (!handleFileRead(serverweb.uri()))
