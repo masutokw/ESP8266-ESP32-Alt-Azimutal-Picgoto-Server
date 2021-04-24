@@ -75,7 +75,7 @@ void thread_motor2(mount_t* m)
 }
 
 int goto_ra_dec(mount_t *mt, double ra, double dec)
-{  mt->is_tracking = TRUE;
+{ mt->is_tracking = TRUE;
   st_target.ra = ra;
   st_target.dec = dec;
 
@@ -223,12 +223,12 @@ void mount_lxde_str(char* message, mount_t *mt)
 
 int readconfig(mount_t *mt)
 {
-  int maxcounter, maxcounteralt ;
-  double tmp;
+  int maxcounter, maxcounteralt,back_az,back_alt;
+  double tmp, tmp2;
   File f = SPIFFS.open("/mount.config", "r");
   if (!f) {
-    init_motor( mt->azmotor, AZ_ID, AZ_RED, SID_RATE * SEC_TO_RAD, mt->prescaler, mt->maxspeed[0], 0);
-    init_motor( mt->altmotor,  ALT_ID, ALT_RED, 0, mt->prescaler, mt->maxspeed[1], 0); return -1;
+    init_motor( mt->azmotor, AZ_ID, AZ_RED, SID_RATE * SEC_TO_RAD, mt->prescaler, mt->maxspeed[0], 0,0);
+    init_motor( mt->altmotor,  ALT_ID, ALT_RED, 0, mt->prescaler, mt->maxspeed[1], 0,0); return -1;
   }
   String s = f.readStringUntil('\n');
   maxcounter = s.toInt();
@@ -263,12 +263,14 @@ int readconfig(mount_t *mt)
   focuspeed = s.toInt();
   s = f.readStringUntil('\n');
   tmp = s.toFloat();
-  init_motor( mt->azmotor, AZ_ID, maxcounter, 0, mt->prescaler, mt->maxspeed[0], tmp);
   s = f.readStringUntil('\n');
-  tmp = s.toFloat();
-  init_motor( mt->altmotor,  ALT_ID, maxcounteralt, 0, mt->prescaler, mt->maxspeed[1], tmp);
-
-
+  tmp2 = s.toFloat();
+  s = f.readStringUntil('\n');
+  back_az = s.toInt();
+  s = f.readStringUntil('\n');
+  back_alt = s.toInt();
+  init_motor( mt->azmotor, AZ_ID, maxcounter, 0, mt->prescaler, mt->maxspeed[0], tmp, back_az);
+  init_motor( mt->altmotor,  ALT_ID, maxcounteralt, 0, mt->prescaler, mt->maxspeed[1], tmp2, back_alt);
   return 0;
 
 
@@ -369,7 +371,7 @@ void track(mount_t *mt)
       st_target.ra = mt->ra_target = st_current.ra;
       st_target.dec = mt->dec_target = st_current.dec;
       sync_target = FALSE;
-      mt->is_tracking=TRUE;
+      mt->is_tracking = TRUE;
     }
 
     if (mt->is_tracking)
@@ -416,7 +418,7 @@ void align_sync_all(mount_t *mt, long ra, long dec)
     case 2:
       set_star(&st_2, ra * (15.0 / 3600.0), dec / 3600.0, RAD_TO_DEG * mt->azmotor->position, RAD_TO_DEG * mt->altmotor->position,  ((millis() - sdt_millis) / 1000.0));
       // init_star(2, &st_2);
-      mt->is_tracking =FALSE;
+      mt->is_tracking = FALSE;
       sync_target = TRUE;
       compute_trasform(&st_1, &st_2);
       mt->is_tracking = TRUE;

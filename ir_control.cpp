@@ -45,12 +45,12 @@ void ir_read(void)
   {
     if (results.value == 0xFFFFFFFFFFFFFFFF) code = 0xFFFF;
     else
-    {
+    { truecode = results.command;
 #if REMOTE_T == 0
-      truecode = results.command;
+     
       lasti = last = code =  get_IR_lcode(truecode);
 #else
-      lasti =last = code = results.command;
+      lasti =last = code = truecode;
 #endif
     }
     switch (code)

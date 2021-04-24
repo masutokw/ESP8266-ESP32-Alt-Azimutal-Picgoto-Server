@@ -12,7 +12,7 @@ int sign(double t)
 
 }
 
-void init_motor(motor_t* mt, char ref, int maxcounter, double spd, double tick, double maxspd, double accel)
+void init_motor(motor_t* mt, char ref, int maxcounter, double spd, double tick, double maxspd, double accel,int back)
 {
   mt->speed = 0;
   mt->targetspeed = spd;
@@ -26,7 +26,8 @@ void init_motor(motor_t* mt, char ref, int maxcounter, double spd, double tick, 
   mt->slewing = 0;
   mt->maxspeed = maxspd;
   set_motor_max_counter(ref, maxcounter);
-  setbackslash(mt,0);
+  mt->backslash=back;
+  setbackslash(mt,back);
 }
 
 void setspeed(motor_t* mt , double tspeed)
@@ -146,5 +147,6 @@ void settargetspeed(motor_t* mt, double tspeed)
 
 void setbackslash(motor_t* mt,int back)
 {
-setmotorbackslash(mt->id, back);
+setmotorbackslash(mt->id,abs(back));
+set_motor_back_slash_mode(mt->id,(back>0)? 1:0);
 }

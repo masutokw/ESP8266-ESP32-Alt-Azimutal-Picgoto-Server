@@ -140,6 +140,7 @@ void setup()
 #endif
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAP("ESP-PGT", "boquerones");
+// WiFi.softAP("TUBOSAURIO", "acebuche");
   SPIFFS.begin();
   File f = SPIFFS.open("/wifi.config", "r");
   if (f)

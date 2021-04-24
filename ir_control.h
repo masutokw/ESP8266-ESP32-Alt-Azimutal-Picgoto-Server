@@ -2,7 +2,7 @@
 #ifdef IR_CONTROL
 #ifndef IR_CONTROL_H_INCLUDED
 #define IR_CONTROL_H_INCLUDED
-#define REMOTE_T 0
+#define REMOTE_T 0 //4
 #if REMOTE_T ==1
 #define EAST 0x16
 #define WEST  0x14

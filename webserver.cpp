@@ -79,7 +79,9 @@ void handleConfig()
     msg += "\n" + serverweb.arg("FOCUSPEEDLOW");
     msg += "\n" + serverweb.arg("FOCUSPEED");
     msg += "\n" + serverweb.arg("RAMP");
-    msg += "\n" + serverweb.arg("RAMPA") + "\n";
+    msg += "\n" + serverweb.arg("RAMPA");
+    msg += "\n" + serverweb.arg("BACK_AZ");
+    msg += "\n" + serverweb.arg("BACK_ALT") + "\n";
     String temp = serverweb.arg("SLEW");
     telescope->rate[3][0] = temp.toFloat();
     temp = serverweb.arg("SLEWA");
@@ -138,7 +140,10 @@ void handleConfig()
 
   content += "<tr><td>Prescaler</td><td><input type='number' name='PRESCALER' class=\"text_red\" value='" + String(telescope->prescaler) + "' uSec</td></tr>";
   content += "<tr><td>Ramp</td><td><input type='number' step='0.01' name='RAMP' class=\"text_red\" value='" + String(telescope->azmotor->acceleration / SEC_TO_RAD) + "'></td>";
-  content += "<td><input type='number' step='0.01' name='RAMPA' class=\"text_red\" value='" + String(telescope->altmotor->acceleration / SEC_TO_RAD) + "'></td></tr></table>";
+  content += "<td><input type='number' step='0.01' name='RAMPA' class=\"text_red\" value='" + String(telescope->altmotor->acceleration / SEC_TO_RAD) + "'></td></tr>";
+  
+  content += "<tr><td>BackSlash</td><td><input type='number' step='1' name='BACK_AZ' class=\"text_red\" value='" + String(telescope->azmotor->backslash) + "'></td>";
+  content += "<td><input type='number' step='1' name='BACK_ALT' class=\"text_red\" value='" + String(telescope->altmotor->backslash) + "'></td></tr></table>";
   content += "<button onclick=\"location.href='/park'\" class=\"button_red\" type=\"button\">Park telescope</button>";
   content += "<button onclick=\"location.href='/home'\" class=\"button_red\" type=\"button\">Reset home</button><br>";
   content += "<button onclick=\"location.href='/Align'\"class=\"button_red\" type=\"button\">2-3 stars Alignment menu</button>";
