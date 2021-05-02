@@ -16,6 +16,7 @@ extern WebServer serverweb;
 extern mount_t *telescope;
 extern String ssi;
 extern String pwd;
+extern byte napt;
 //void handleConfig();
 //String getContentType(String filename);
 //bool handleFileRead(String path);

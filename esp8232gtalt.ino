@@ -46,6 +46,7 @@ WebServer serverweb(WEB_PORT);
 char buff[50] = "Waiting for connection..";
 char *pin = "0000";
 extern char  response[200];
+byte napt=0;
 mount_t *telescope;
 c_star volatile st_now, st_target, st_current, st_1, st_2;
 String ssi;
@@ -163,6 +164,7 @@ void setup()
     IPAddress dns;
     if (ip.fromString(f.readStringUntil('\n')) && subnet.fromString(f.readStringUntil('\n')) && gateway.fromString(f.readStringUntil('\n')) + dns.fromString(f.readStringUntil('\n'))) {
       WiFi.config(ip, gateway, subnet, dns);
+      napt=f.readStringUntil('\n').toInt();
     }
 
     f.close();
@@ -178,7 +180,13 @@ void setup()
   delay(500);
   uint8_t i = 0;
   while (WiFi.status() != WL_CONNECTED && i++ < 20) delay(500);
-  if  (WiFi.status() != WL_CONNECTED) WiFi.disconnect(true);
+  if  (WiFi.status() != WL_CONNECTED) WiFi.disconnect(true);else
+   { dhcps_set_dns(1,WiFi.gatewayIP());
+      dhcps_set_dns(0,WiFi.dnsIP(0));
+      err_t ret = ip_napt_init(NAPT, NAPT_PORT);
+    if (ret == ERR_OK) {
+    ret = ip_napt_enable_no(SOFTAP_IF, napt);}
+    }
 #ifdef OLED_DISPLAY
   oled_waitscr();
 #endif

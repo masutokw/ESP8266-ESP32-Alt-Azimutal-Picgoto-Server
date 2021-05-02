@@ -50,6 +50,8 @@ void handleConfig()
   if (serverweb.hasArg("SSID") && serverweb.hasArg("PASSWORD"))
   {
     String ssid = serverweb.arg("SSID") + "\n" + serverweb.arg("PASSWORD") + "\n";
+     ssi=serverweb.arg("SSID");
+     pwd=serverweb.arg("PASSWORD");
     File f = SPIFFS.open("/wifi.config", "w");
     if (!f)
     {
@@ -300,9 +302,9 @@ void handleStar( void)
 }
 void handleNetwork( void) {
   String msg, ip, mask, gate, dns;
-  if (serverweb.hasArg("IP") && serverweb.hasArg("MASK") && serverweb.hasArg("GATEWAY") && serverweb.hasArg("DNS"))
+  if (serverweb.hasArg("IP") && serverweb.hasArg("MASK") && serverweb.hasArg("GATEWAY") && serverweb.hasArg("DNS")&& serverweb.hasArg("NAPT"))
   {
-    String net = serverweb.arg("IP") + "\n" + serverweb.arg("MASK") + "\n" + serverweb.arg("GATEWAY") + "\n" + serverweb.arg("DNS") + "\n";
+    String net = serverweb.arg("IP") + "\n" + serverweb.arg("MASK") + "\n" + serverweb.arg("GATEWAY") + "\n" + serverweb.arg("DNS") + "\n"+serverweb.arg("NAPT") + "\n";
     File f = SPIFFS.open("/network.config", "w");
     if (!f)
     {
@@ -314,14 +316,17 @@ void handleNetwork( void) {
     msg = serverweb.arg("IP");
     msg += "\n" + serverweb.arg("MASK");
     msg += "\n" + serverweb.arg("GATEWAY");
-    msg += "\n" + serverweb.arg("DNS") + "\n";;
+    msg += "\n" + serverweb.arg("DNS") ;
+      msg += "\n" + serverweb.arg("NAPT") +"\n";
   }
   String content = "<html><style>" + String(BUTT) + String(TEXTT) + "</style>" + String(AUTO_SIZE) + "<body  bgcolor=\"#000000\" text=\"#FF6000\"><form action='/network' method='POST'><h2>Network Config</h2>";
   content += "<fieldset style=\"width:15%;border-radius:15px\"><legend>Network</legend><table style='width:200px'>";
   content += "<tr><td>IP</td><td><input type='text' name='IP' class=\"text_red\" value='" + WiFi.localIP().toString() + "'></td></td>";
   content += "<td><td>MASK</td><td><input type='test' name='MASK'class=\"text_red\"  value='" + WiFi.subnetMask().toString() + "'></td></tr>";
   content += "<tr><td>Gateway</td><td><input type='text' name='GATEWAY' class=\"text_red\" value='" + WiFi.gatewayIP().toString() + "'></td></td>";
-  content += "<td><td>DNS</td><td><input type='test' name='DNS' class=\"text_red\"  value='" + WiFi.gatewayIP().toString() + "'></td></tr></table>";
+  content += "<td><td>DNS</td><td><input type='test' name='DNS' class=\"text_red\"  value='" + WiFi.gatewayIP().toString() + "'></td></tr>";
+   content += "<tr><td>NAPT</td><td><input type='number' name='NAPT' class=\"text_red\" value='"+String(napt)+"'></td></td></tr></table>";
+ 
   content += "<input type='submit' name='SUBMIT'  class=\"button_red\" value='Save'></fieldset></form>" + msg + "<br>";
   content += "<button onclick=\"location.href='/'\"class=\"button_red\" type=\"button\">Back</button><br>";
   content += "You must restart de ice for network changes to take effect";
