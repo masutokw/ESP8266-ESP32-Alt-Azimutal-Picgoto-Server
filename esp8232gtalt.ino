@@ -181,11 +181,11 @@ void setup()
   uint8_t i = 0;
   while (WiFi.status() != WL_CONNECTED && i++ < 20) delay(500);
   if  (WiFi.status() != WL_CONNECTED) WiFi.disconnect(true);else
-   { dhcps_set_dns(1,WiFi.gatewayIP());
+   {if (napt){ dhcps_set_dns(1,WiFi.gatewayIP());
       dhcps_set_dns(0,WiFi.dnsIP(0));
       err_t ret = ip_napt_init(NAPT, NAPT_PORT);
     if (ret == ERR_OK) {
-    ret = ip_napt_enable_no(SOFTAP_IF, napt);}
+    ret = ip_napt_enable_no(SOFTAP_IF, napt);}}
     }
 #ifdef OLED_DISPLAY
   oled_waitscr();
