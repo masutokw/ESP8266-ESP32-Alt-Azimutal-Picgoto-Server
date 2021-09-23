@@ -251,7 +251,7 @@ int readconfig(mount_t *mt)
   s = f.readStringUntil('\n');
   mt->lat = s.toFloat();
   s = f.readStringUntil('\n');
-  mt->time_zone = s.toFloat();
+  mt->time_zone = s.toInt();
 
   //f.close();
 

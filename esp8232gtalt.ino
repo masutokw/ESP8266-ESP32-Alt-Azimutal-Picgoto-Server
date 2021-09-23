@@ -204,10 +204,10 @@ void setup()
 #ifdef esp8266
   httpUpdater.setup(&serverweb);
 #endif
-  config_NTP(telescope->time_zone, 0);
+//  config_NTP(telescope->time_zone, 0);
   if  (WiFi.status() == WL_CONNECTED)
   { int cn = 0;  now = time(nullptr);
-  
+
     while ((now < EPOCH_1_1_2019) && (cn++) < 5) {
       delay(500);
       now = time(nullptr);
@@ -215,9 +215,9 @@ void setup()
     init_time = time(nullptr);
 
   }
- 
 
-    
+
+
   initwebserver();
   tak_init(telescope);
   speed_control_tckr.attach_ms(SPEED_CONTROL_TICKER, thread_motor2, telescope);
