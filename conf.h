@@ -13,7 +13,7 @@
 #define NAPT 1000
 #define NAPT_PORT 10
 
-#else 
+#else
 #include <WiFi.h>
 #include <WebServer.h>
 #include <Update.h>

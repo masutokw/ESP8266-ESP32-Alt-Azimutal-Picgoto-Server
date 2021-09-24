@@ -204,7 +204,7 @@ void setup()
 #ifdef esp8266
   httpUpdater.setup(&serverweb);
 #endif
-//  config_NTP(telescope->time_zone, 0);
+  config_NTP(telescope->time_zone, 0);
   if  (WiFi.status() == WL_CONNECTED)
   { int cn = 0;  now = time(nullptr);
 
