@@ -38,6 +38,7 @@ mount_t* create_mount(void)
   //  init_motor( m->altmotor,  ALT_ID, maxcounteralt, 0, m->prescaler, m->maxspeed[1]);
   m->is_tracking = TRUE;
   m->mount_mode = ALTAZ;
+  //m->mount_mode = EQ;
   m->sync = FALSE;
   m->smode = 0;
 
@@ -223,12 +224,12 @@ void mount_lxde_str(char* message, mount_t *mt)
 
 int readconfig(mount_t *mt)
 {
-  int maxcounter, maxcounteralt,back_az,back_alt;
+  int maxcounter, maxcounteralt, back_az, back_alt;
   double tmp, tmp2;
   File f = SPIFFS.open("/mount.config", "r");
   if (!f) {
-    init_motor( mt->azmotor, AZ_ID, AZ_RED, SID_RATE * SEC_TO_RAD, mt->prescaler, mt->maxspeed[0], 0,0);
-    init_motor( mt->altmotor,  ALT_ID, ALT_RED, 0, mt->prescaler, mt->maxspeed[1], 0,0); return -1;
+    init_motor( mt->azmotor, AZ_ID, AZ_RED, SID_RATE * SEC_TO_RAD, mt->prescaler, mt->maxspeed[0], 0, 0);
+    init_motor( mt->altmotor,  ALT_ID, ALT_RED, 0, mt->prescaler, mt->maxspeed[1], 0, 0); return -1;
   }
   String s = f.readStringUntil('\n');
   maxcounter = s.toInt();
@@ -269,6 +270,8 @@ int readconfig(mount_t *mt)
   back_az = s.toInt();
   s = f.readStringUntil('\n');
   back_alt = s.toInt();
+  s = f.readStringUntil('\n');
+  mt->mount_mode = (mount_mode_t)s.toInt();
   init_motor( mt->azmotor, AZ_ID, maxcounter, 0, mt->prescaler, mt->maxspeed[0], tmp, back_az);
   init_motor( mt->altmotor,  ALT_ID, maxcounteralt, 0, mt->prescaler, mt->maxspeed[1], tmp2, back_alt);
   return 0;
@@ -302,11 +305,20 @@ void mount_home_set(mount_t *mt)
   mt->altmotor->slewing = mt->azmotor->slewing = mt->is_tracking = FALSE;
   mt->altmotor->targetspeed = 0.0;
   mt->azmotor->targetspeed = 0.0;
+    delay(100);
+  if (mt->mount_mode == 0) {
+  
+    setposition(mt->azmotor, M_PI / mt->azmotor->resolution);
+    delay(10);
+    setposition(mt->altmotor, (M_PI / 4) / mt->altmotor->resolution);
+  }
+  else
+  {
+    setposition(mt->azmotor, (M_PI / 2.0) / mt->azmotor->resolution);
+    delay(10);
+    setposition(mt->altmotor, (0.0) / mt->altmotor->resolution);
+  };
 
-  delay(100);
-  setposition(mt->azmotor, M_PI / mt->azmotor->resolution);
-  delay(10);
-  setposition(mt->altmotor, (M_PI / 4) / mt->altmotor->resolution);
   //   save_counters(ALT_ID);
   //  delay(10);
   //  save_counters(AZ_ID);
