@@ -21,6 +21,7 @@ typedef struct
     c_double	alt ;
     c_double 	az ;
     c_double    timer_count ;//time in seconds
+    char p_mode;
 } c_star ;
 // c_star st_now,st_target;
 void reset_transforms(c_double az1,c_double az2,c_double az3);
@@ -33,4 +34,3 @@ void set_star(c_star *st,c_double ra,c_double dec,c_double az,c_double alt,c_dou
 //input coordinates degrees, timer seconds
 
 #endif
-

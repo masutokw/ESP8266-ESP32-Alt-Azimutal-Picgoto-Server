@@ -150,14 +150,14 @@ void mount_move(mount_t *mt, char dir)
   mt->altmotor->slewing = mt->azmotor->slewing = FALSE;
   mt->is_tracking = FALSE;
   int srate = mt->srate;
-  //  int invert = (get_pierside(mt)) ? -1 : 1;
+   int invert = (get_pierside(mt)) ? -1 : 1;
   switch (dir)
   {
     case 'n':
-      mt->altmotor->targetspeed = SID_RATE * mt->rate[srate][1] * SEC_TO_RAD;
+      mt->altmotor->targetspeed = SID_RATE * mt->rate[srate][1] * SEC_TO_RAD * invert;
       break;
     case 's':
-      mt->altmotor->targetspeed = -SID_RATE * mt->rate[srate][1] * SEC_TO_RAD;
+      mt->altmotor->targetspeed = -SID_RATE * mt->rate[srate][1] * SEC_TO_RAD * invert;
       break;
     case 'w':
       mt->azmotor->targetspeed = SID_RATE * mt->rate[srate][0]  * SEC_TO_RAD;
@@ -314,9 +314,9 @@ void mount_home_set(mount_t *mt)
   }
   else
   {
-    setposition(mt->azmotor, (M_PI / 2.0) / mt->azmotor->resolution);
+    setposition(mt->azmotor, (3.0*M_PI / 2.0) / mt->azmotor->resolution);
     delay(10);
-    setposition(mt->altmotor, (0.0) / mt->altmotor->resolution);
+    setposition(mt->altmotor, (M_PI) / mt->altmotor->resolution);
   };
 
   //   save_counters(ALT_ID);
@@ -377,6 +377,8 @@ void track(mount_t *mt)
     st_target.timer_count = st_current.timer_count = ((millis() - sdt_millis) / 1000.0);
     st_current.az = mt->azmotor->position;
     st_current.alt = mt->altmotor->position;
+    st_current.p_mode=st_target.p_mode=get_pierside(mt);
+
     //compute ecuatorial current equatorial values to be send out from LX200 protocol interface
     to_equatorial(&st_current);
     if (sync_target ) {

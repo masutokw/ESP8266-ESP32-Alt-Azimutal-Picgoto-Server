@@ -182,7 +182,7 @@ void compute_trasform(c_star *star1,c_star *star2)
     }
 }
 
-
+/*
 void to_alt_az(c_star *star)
 
 {
@@ -210,7 +210,38 @@ void to_alt_az(c_star *star)
     while (star->az<0.0)  star->az+= M_2PI ;
     while (star->az>(M_2PI)) star->az-= M_2PI ;
 }
+*/
+void to_alt_az(c_star *star)
+{
+    unsigned char i, j;
 
+
+    c_double tmp0 = star->ra - (KTIME  * star->timer_count) ;
+    c_double tmp1=cos(star->dec);
+    x[0][0] = tmp1 * cos(tmp0);
+    x[1][0] = tmp1 * sin(tmp0);
+    x[2][0] = sin(star->dec);
+    y[0][0] = 0.0;
+    y[1][0] = 0.0;
+    y[2][0] = 0.0;
+    for (i = 0; i <= 2; i++)
+    {
+        for (j = 0; j <= 2; j++)
+            y[i][0] += altz_trans_mat[i][j] * x[j][0];
+    }
+    rect_to_polar(&tmp0,&tmp1);
+    sub_y(tmp0,tmp1);
+    rect_to_polar(&tmp0,&tmp1);
+    star->alt =tmp1- z3;
+    star->az=M_2PI - tmp0;
+    if (star->p_mode){
+     star->alt=M_PI-star->alt;
+     star->az+=M_PI;
+     }
+    while (star->az<0.0)  star->az+= M_2PI ;
+    while (star->az>(M_2PI)) star->az-= M_2PI ;
+    
+}
 
 void to_equatorial(c_star *star)
 {
