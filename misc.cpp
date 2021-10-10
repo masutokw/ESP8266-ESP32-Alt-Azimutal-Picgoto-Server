@@ -128,11 +128,11 @@ void lxprintlong1(char *message, double ang)
 {
 
   int x = ang * 3600.0;
-  char c = '+';
+  char c = '-';
   if (x < 0)
   {
     x = -x;
-    c = '-';
+    c = '+';
   }
   int gra = x / 3600;
   int temp = (x % 3600);
@@ -190,14 +190,14 @@ void config_NTP(int zone, int dls)
   char tx[10];
   int x = zone;
   char c = '-';
-  // configTime(TZ_Europe_Madrid, "pool.ntp.org");
+ // configTime(TZ_Europe_Madrid, "pool.ntp.org");
   if (x < 0)
   {
     x = -x;
     c = '+';
   }
   sprintf(tx, "GMT%c%x", c, x);
-  configTime(tx, "pool.ntp.org");
+ configTime(tx, "pool.ntp.org");
   setenv ("TZ", tx, 1);
   tzset ();
 #else

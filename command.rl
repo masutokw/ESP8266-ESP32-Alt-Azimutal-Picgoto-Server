@@ -72,7 +72,9 @@ void set_cmd_exe(char cmd,long date)
         break;
     case 'g':
         mount.longitude=date ;
-        telescope->longitude=-date/3600.0;
+		if (date <648000)
+        telescope->longitude=-date/3600.0; else
+		telescope->longitude=(1296000.0-date)/3600.0;
 
         break;
     case 'L' :

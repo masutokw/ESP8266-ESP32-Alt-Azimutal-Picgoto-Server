@@ -156,11 +156,14 @@ void handleConfig()
   content += "<tr><td>Alt</td><td>  <input type='radio' name='MOUNT' value='0'  class=\"button_red\"'" + checked + "></td>";
   if (telescope->mount_mode) checked = " checked " ; else checked = ""  ;
   content += "<td>EQ  <input type='radio' name='MOUNT' value='1'  class=\"button_red\"'" + checked + "></td></tr></table>";
+  checked =(get_pierside(telescope)?"West":"East");
+  content += "Meridian side "+checked+"<br>";
   content += "<button onclick=\"location.href='/park'\" class=\"button_red\" type=\"button\">Park telescope</button>";
   content += "<button onclick=\"location.href='/home'\" class=\"button_red\" type=\"button\">Reset home</button><br>";
   content += "<button onclick=\"location.href='/Align'\"class=\"button_red\" type=\"button\">2-3 stars Alignment menu</button>";
-  content += "<input type='submit' name='SUBMIT' class=\"button_red\" value='Save'></fieldset>";
-
+  content += "<input type='submit' name='SUBMIT' class=\"button_red\" value='Save'><br>";
+  content += "<button onclick=\"location.href='/meridian?SIDE=0'\" class=\"button_red\"  type=\"button\">Meridian Flip EAST</button>";
+    content += "<button onclick=\"location.href='/meridian?SIDE=1'\" class=\"button_red\"  type=\"button\">Meridian Flip WEST</button></fieldset>";
   content += "<fieldset style=\"width:15% ; border-radius:15px;\"> <legend>Focuser</legend>";
   content += "<table style='width:200px'>";
   content += "<tr><td>Focus Max:</td><td><input type='number'step='1' name='FOCUSMAX' class=\"text_red\" value='" + String(focusmax) + "'></td></tr>";
@@ -276,6 +279,7 @@ void handleRestart(void)
   content += "Mount parked  ,position saved on EEPROM.<br>";
   content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
   content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
+  content += "<button onclick=\"location.href='/'\"  type=\"button\">Home</button><br>";
   content += "</body></html>";
   serverweb.send(200, "text/html", content);
   delay(1000);
@@ -433,7 +437,22 @@ void handleIr(void)
   serverweb.send(200, "text/html", content);
 }
 #endif
+void handleMeridian(void)
+{
+  if (serverweb.hasArg("SIDE")){
+ String net = serverweb.arg("SIDE");
+ int   side = net.toInt();
+ //meridianflip(telescope,side);
+ }
 
+ String content =  "<html><style>" + String(BUTT) + String(TEXTT) + "</style>"+String(AUTO_SIZE)+"<body  bgcolor=\"#000000\" text=\"#FF6000\"><h2>ESP-PGT++ Meridian flip</h2><br>";
+  content += "Pier side: " + String(get_pierside(telescope)  ? "WEST" : "EAST") + "<br>";
+  content += "AZ Counter:" + String(telescope->azmotor->counter) + "<br>";
+  content += "Alt Counter:" + String(telescope->altmotor->counter) + "<br>";
+  content += "<button onclick=\"location.href='/'\"  type=\"button\">Back</button><br>";
+  content += "</body></html>";
+  serverweb.send(200, "text/html", content);
+}
 void initwebserver(void)
 {
   serverweb.on("/config", handleConfig);
@@ -445,9 +464,10 @@ void initwebserver(void)
   serverweb.on("/Align", handleStar);
   serverweb.on("/home", handleHome);
   serverweb.on("/network", handleNetwork);
+   serverweb.on("/meridian",handleMeridian);
 #ifdef IR_CONTROL
   serverweb.on("/remote", handleRemote);
-  serverweb.on("/IR", handleIr);
+   serverweb.on("/IR", handleIr);
 #endif
   serverweb.onNotFound([]()
   {
