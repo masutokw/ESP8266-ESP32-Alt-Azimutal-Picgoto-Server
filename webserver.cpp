@@ -115,10 +115,14 @@ void handleConfig()
 
   String content = "<html><style>" + String(BUTT) + String(TEXTT) + "</style>" + String(AUTO_SIZE);
   content += "<body  bgcolor=\"#000000\" text=\"#FF4500\"><form action='/config' method='POST'>";
+  content+= "<h2>ESP";
+#ifndef esp8266
+content+="32";
+#endif
 #ifdef IR_CONTROL
-  content += "<h2>ESP-PGT++ AltAz IR Control</h2>";
+  content += "-PGT++ AltAz IR Control</h2>";
 #else
-  content += "<h2>ESP-PGT++ AltAz NUNCHUCK</h2>";
+  content += "-PGT++ AltAz NUNCHUCK</h2>";
 #endif
 
   content += "<fieldset style=\"width:15% ; border-radius:15px\"> <legend>Login  information:</legend>";

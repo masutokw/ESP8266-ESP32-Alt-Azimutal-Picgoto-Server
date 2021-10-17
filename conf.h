@@ -16,7 +16,7 @@
 #else
 #include <WiFi.h>
 #include <WebServer.h>
-#include <Update.h>
+#include <HTTPUpdateServer.h>
 #include <SPIFFS.h>
 #include "BluetoothSerial.h"
 
@@ -24,7 +24,7 @@
 //optional
 
 //#define NUNCHUCK_CONTROL
-#define IR_CONTROL
+//#define IR_CONTROL
 //#define PAD
 //#define OLED_DISPLAY
 //#define OTA

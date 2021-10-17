@@ -41,7 +41,7 @@ ESP8266HTTPUpdateServer httpUpdater;
 #else
 BluetoothSerial SerialBT;
 WebServer serverweb(WEB_PORT);
-//UpdateServer httpUpdater;
+HTTPUpdateServer httpUpdater;
 #endif
 char buff[50] = "Waiting for connection..";
 char *pin = "0000";
@@ -136,7 +136,7 @@ void setup()
 #endif
 #ifndef esp8266
   SerialBT.setPin(pin);
-  SerialBT.begin("ESP32test");
+  SerialBT.begin("PGTA_ESP32");
   SerialBT.setPin(pin);
 #endif
   WiFi.mode(WIFI_AP_STA);
@@ -180,13 +180,16 @@ void setup()
   delay(500);
   uint8_t i = 0;
   while (WiFi.status() != WL_CONNECTED && i++ < 20) delay(500);
-  if  (WiFi.status() != WL_CONNECTED) WiFi.disconnect(true);else
+  if  (WiFi.status() != WL_CONNECTED) WiFi.disconnect(true);
+  #ifdef NAPT
+  else
    {if (napt){ dhcps_set_dns(1,WiFi.gatewayIP());
       dhcps_set_dns(0,WiFi.dnsIP(0));
       err_t ret = ip_napt_init(NAPT, NAPT_PORT);
     if (ret == ERR_OK) {
     ret = ip_napt_enable_no(SOFTAP_IF, napt);}}
     }
+    #endif
 #ifdef OLED_DISPLAY
   oled_waitscr();
 #endif
@@ -201,9 +204,7 @@ void setup()
   server.setNoDelay(true);
   telescope = create_mount();
   readconfig(telescope);
-#ifdef esp8266
   httpUpdater.setup(&serverweb);
-#endif
   config_NTP(telescope->time_zone, 0);
   if  (WiFi.status() == WL_CONNECTED)
   { int cn = 0;  now = time(nullptr);
