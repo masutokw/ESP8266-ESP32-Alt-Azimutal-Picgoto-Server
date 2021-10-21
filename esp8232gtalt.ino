@@ -18,7 +18,6 @@
 #ifdef  NUNCHUCK_CONTROL
 #include "nunchuck.h"
 #endif
-#define OTA
 #ifdef OTA
 #include <ArduinoOTA.h>
 #include "OTA_helper.hpp"

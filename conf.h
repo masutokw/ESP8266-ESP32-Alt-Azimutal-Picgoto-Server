@@ -12,6 +12,9 @@
 #include <user_interface.h>
 #define NAPT 1000
 #define NAPT_PORT 10
+#define IR_PIN 2
+#define SDA_PIN 2
+#define SCL_PIN 0
 
 #else
 #include <WiFi.h>
@@ -19,15 +22,17 @@
 #include <HTTPUpdateServer.h>
 #include <SPIFFS.h>
 #include "BluetoothSerial.h"
-
+#define IR_PIN 15
+#define SDA_PIN 21
+#define SCL_PIN 22
 #endif
 //optional
 
-//#define NUNCHUCK_CONTROL
+#define NUNCHUCK_CONTROL
 //#define IR_CONTROL
 //#define PAD
 //#define OLED_DISPLAY
-//#define OTA
+#define OTA
 //#define FIXED_IP 21
 
 
