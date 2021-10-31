@@ -51,8 +51,6 @@ void thread_motor(mount_t* m);
 void thread_motor2(mount_t* m);
 int get_pierside(mount_t *mt);
 int goto_ra_dec(mount_t *mt,double ra,double dec);
-void mount_lxde_str(char* message,mount_t *mt);
-/*void mount_lxra_str(char *message,mount_t *mt);*/
 void mount_park(mount_t *mt);
 void mount_home_set(mount_t *mt);
 void  tak_init(mount_t *mt);

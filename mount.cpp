@@ -198,29 +198,6 @@ int get_pierside(mount_t *mt)
   return (((mt->altmotor->counter) > (mt->altmotor->maxcounter / 4 )) && ((mt->altmotor->counter) < (3 * mt->altmotor->maxcounter / 4 )));
 }
 
-void mount_lxde_str(char* message, mount_t *mt)
-
-{
-  double ang = mt->altmotor->position;
-  if (ang > 1.5 * M_PI) ang = ang - (M_PI * 2.0)
-                                ;
-  else if (ang > M_PI / 2.0) ang = M_PI - ang;
-
-  int x = ang * RAD_TO_DEG * 3600.0;
-  char c = '+';
-  if (x < 0)
-  {
-    x = -x;
-    c = '-';
-  }
-  int gra = x / 3600;
-  int temp = (x % 3600);
-  int min = temp / 60;
-  int sec = temp % 60;
-  sprintf(message, "%c%02d%c%02d:%02d#", c, gra, 225, min, sec);
-
-
-};
 
 int readconfig(mount_t *mt)
 {

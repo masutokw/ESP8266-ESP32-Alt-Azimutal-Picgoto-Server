@@ -227,8 +227,7 @@ void setup()
   pad_Init();
 #endif //PAD
 #ifdef NUNCHUCK_CONTROL
-  // nunchuck_init(D6, D5);
-  nunchuck_init(2, 0);
+   nunchuck_init(SDA_PIN, SCL_PIN);
 #endif
 #ifdef OTA
   InitOTA();
